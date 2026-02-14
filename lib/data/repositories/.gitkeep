@@ -1,0 +1,15 @@
+// Data repositories directory
+// Add your repository classes here
+// Example:
+// class AuthRepository {
+//   final ApiClient _apiClient;
+//
+//   AuthRepository(this._apiClient);
+//
+//   Future<Response> login(String email, String password) async {
+//     return await _apiClient.postRequest(
+//       ApiEndpoints.login,
+//       {'email': email, 'password': password},
+//     );
+//   }
+// }
