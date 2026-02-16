@@ -13,7 +13,12 @@ import '../features/dashboard/dashboard_page.dart';
 import '../features/notifications/notifications_page.dart';
 import '../features/courses/course_details_page.dart';
 import "../features/courses/course_video_page.dart";
+import "../features/courses/resource_details_page.dart";
+import "../features/courses/pages/lesson_completion_page.dart";
+import "../features/courses/pages/quiz_page.dart";
+import "../features/courses/pages/course_complete_page.dart";
 import '../features/dashboard/dashboard_binding.dart';
+import '../features/community/post_details_page.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -79,6 +84,36 @@ class AppRouter {
         path: AppRoutes.courseVideo,
         builder: (context, state) {
           return const CourseVideoPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.resourceDetails,
+        builder: (context, state) {
+          return const ResourceDetailsPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.lessonCompletion,
+        builder: (context, state) {
+          return const LessonCompletionPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.quiz,
+        builder: (context, state) {
+          return const QuizPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.courseComplete,
+        builder: (context, state) {
+          return const CourseCompletePage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.postDetails,
+        builder: (context, state) {
+          return const PostDetailsPage();
         },
       ),
     ],

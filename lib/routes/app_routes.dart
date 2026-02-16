@@ -10,4 +10,9 @@ abstract class AppRoutes {
   static const String notifications = '/notifications';
   static const String courseDetails = '/course-details';
   static const String courseVideo = '/course-video';
+  static const String resourceDetails = '/resource-details';
+  static const String lessonCompletion = '/lesson-completion';
+  static const String quiz = '/quiz';
+  static const String courseComplete = '/course-complete';
+  static const String postDetails = '/post-details';
 }

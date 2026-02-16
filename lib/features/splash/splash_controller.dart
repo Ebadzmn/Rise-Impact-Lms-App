@@ -10,7 +10,7 @@ class SplashController extends GetxController {
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 3));
 
     // TODO: Check auth status and navigate accordingly
     // For now, go to welcome

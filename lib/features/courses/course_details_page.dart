@@ -285,6 +285,7 @@ class CourseDetailsPage extends StatelessWidget {
                 isCompleted: true,
               ),
               _buildQuizTile(
+                context,
                 title: 'Module 1 Quiz',
                 details: '10 questions • Score: 90%',
                 isCompleted: true,
@@ -372,6 +373,8 @@ class CourseDetailsPage extends StatelessWidget {
       onTap: () {
         if (icon == Icons.play_arrow_outlined) {
           context.push(AppRoutes.courseVideo);
+        } else if (icon == Icons.article_outlined) {
+          context.push(AppRoutes.resourceDetails);
         }
       },
       child: Container(
@@ -436,55 +439,61 @@ class CourseDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuizTile({
+  Widget _buildQuizTile(
+    BuildContext context, {
     required String title,
     required String details,
     bool isCompleted = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9F3EB), // Light Beige
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6D6C4)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFDFF7F2), // Light Teal
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () {
+        context.push(AppRoutes.lessonCompletion);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F3EB), // Light Beige
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE6D6C4)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFDFF7F2), // Light Teal
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_outline,
+                color: Color(0xFF26A69A), // Teal
+                size: 24,
+              ),
             ),
-            child: const Icon(
-              Icons.check_circle_outline,
-              color: Color(0xFF26A69A), // Teal
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: Color(0xFF1A1A1A),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  details,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    details,
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
