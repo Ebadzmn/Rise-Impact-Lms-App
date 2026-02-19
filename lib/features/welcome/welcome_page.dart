@@ -38,11 +38,8 @@ class WelcomePage extends GetView<WelcomeController> {
                     child: const CircleAvatar(
                       radius: 40,
                       backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.spa,
-                        size: 50,
-                        color: Color(0xFF7A8673),
-                      ),
+                      backgroundImage:
+                          AssetImage('assets/images/riselogo.png'),
                     ),
                   ),
                 ),

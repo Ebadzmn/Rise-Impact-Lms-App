@@ -28,8 +28,8 @@ class HomePage extends StatelessWidget {
                       border: Border.all(color: Colors.orange, width: 2),
                       image: const DecorationImage(
                         // Placeholder for logo
-                        image: NetworkImage(
-                          'https://via.placeholder.com/50',
+                        image: AssetImage(
+                          'assets/images/riselogo.png',
                         ), // Replace with asset
                         fit: BoxFit.cover,
                       ),
