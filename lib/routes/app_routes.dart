@@ -7,12 +7,13 @@ abstract class AppRoutes {
   static const String topics = '/topics';
   static const String welcome = '/welcome';
   static const String home = '/home';
-  static const String notifications = '/notifications';
-  static const String courseDetails = '/course-details';
-  static const String courseVideo = '/course-video';
-  static const String resourceDetails = '/resource-details';
-  static const String lessonCompletion = '/lesson-completion';
-  static const String quiz = '/quiz';
-  static const String courseComplete = '/course-complete';
-  static const String postDetails = '/post-details';
+  static const String notifications = '/home/notifications';
+  static const String courseDetails = '/courses/details';
+  static const String courseVideo = '/courses/video';
+  static const String resourceDetails = '/courses/resource-details';
+  static const String lessonCompletion = '/courses/lesson-completion';
+  static const String quiz = '/courses/quiz';
+  static const String courseComplete = '/courses/complete';
+  static const String postDetails = '/community/post-details';
+  static const String createPost = '/community/create-post';
 }

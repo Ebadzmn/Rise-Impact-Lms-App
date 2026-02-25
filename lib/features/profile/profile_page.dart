@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import 'widgets/terms_and_conditions_modal.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -12,7 +13,7 @@ class ProfilePage extends StatelessWidget {
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
           title: 'Profile',
-          showBackButton: true,
+          showBackButton: false,
           actions: [
             Stack(
               alignment: Alignment.topRight,
@@ -425,7 +426,14 @@ class ProfilePage extends StatelessWidget {
               Icons.security_outlined,
               'Term & Condition',
               isArrowVisible: true,
-              onTap: () {},
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const TermsAndConditionsModal(),
+                );
+              },
             ),
             const SizedBox(height: 8), // Bottom padding for aesthetics
           ],

@@ -1,39 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
-import 'dashboard_controller.dart';
-import '../home/home_page.dart';
-import '../courses/courses_page.dart';
-import '../progress/progress_page.dart';
-import '../community/community_page.dart';
-import '../profile/profile_page.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final StatefulNavigationShell navigationShell;
+
+  const DashboardPage({
+    super.key,
+    required this.navigationShell,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(DashboardController());
-
     return Scaffold(
-      body: Obx(
-        () => IndexedStack(
-          index: controller.tabIndex.value,
-          children: const [
-            HomePage(),
-            CoursesPage(),
-            ProgressPage(),
-            CommunityPage(),
-            ProfilePage(),
-          ],
-        ),
+      body: navigationShell,
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: navigationShell.currentIndex,
+        onTap: (index) => _onTap(context, index),
       ),
-      bottomNavigationBar: Obx(
-        () => CustomBottomNavBar(
-          currentIndex: controller.tabIndex.value,
-          onTap: controller.changeTabIndex,
-        ),
-      ),
+    );
+  }
+
+  void _onTap(BuildContext context, int index) {
+    navigationShell.goBranch(
+      index,
+      // A common pattern when using bottom navigation bars is to support
+      // navigating to the initial location when tapping the item that is
+      // already active. This example demonstrates how to support this behavior,
+      // using the initialLocation parameter of goBranch.
+      initialLocation: index == navigationShell.currentIndex,
     );
   }
 }

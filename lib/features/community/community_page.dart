@@ -15,6 +15,7 @@ class CommunityPage extends StatelessWidget {
         child: CustomAppBar(
           title: 'Community',
           showBackButton: true,
+          onBackCallback: () => context.go(AppRoutes.home),
           actions: [
             Stack(
               alignment: Alignment.topRight,
@@ -75,7 +76,7 @@ class CommunityPage extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      context.push(AppRoutes.postDetails);
+                      context.push(AppRoutes.createPost);
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: const Row(

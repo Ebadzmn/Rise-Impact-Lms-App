@@ -19,6 +19,12 @@ import "../features/courses/pages/quiz_page.dart";
 import "../features/courses/pages/course_complete_page.dart";
 import '../features/dashboard/dashboard_binding.dart';
 import '../features/community/post_details_page.dart';
+import '../features/community/create_post_page.dart';
+import '../features/home/home_page.dart';
+import '../features/courses/courses_page.dart';
+import '../features/progress/progress_page.dart';
+import '../features/community/community_page.dart';
+import '../features/profile/profile_page.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -45,7 +51,6 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) {
-          // Bindings can be done here or in the screen itself if using GetView
           return const LoginPage();
         },
       ),
@@ -61,60 +66,131 @@ class AppRouter {
           return const TopicsPage();
         },
       ),
-      GoRoute(
-        path: AppRoutes.home,
-        builder: (context, state) {
+      // Stateful navigation based on:
+      // https://github.com/flutter/packages/blob/main/packages/go_router/example/lib/stateful_shell_route.dart
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          // Return the widget that implements the custom shell (e.g. a BottomNavigationBar).
+          // The [StatefulNavigationShell] is passed to be able to navigate to other branches.
           DashboardBinding().dependencies();
-          return const DashboardPage();
+          return DashboardPage(navigationShell: navigationShell);
         },
-      ),
-      GoRoute(
-        path: AppRoutes.notifications,
-        builder: (context, state) {
-          return const NotificationsPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.courseDetails,
-        builder: (context, state) {
-          return const CourseDetailsPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.courseVideo,
-        builder: (context, state) {
-          return const CourseVideoPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.resourceDetails,
-        builder: (context, state) {
-          return const ResourceDetailsPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.lessonCompletion,
-        builder: (context, state) {
-          return const LessonCompletionPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.quiz,
-        builder: (context, state) {
-          return const QuizPage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.courseComplete,
-        builder: (context, state) {
-          return const CourseCompletePage();
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.postDetails,
-        builder: (context, state) {
-          return const PostDetailsPage();
-        },
+        branches: [
+          // The route branch for the 1st Tab
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const HomePage(),
+                routes: [
+                  GoRoute(
+                    path: 'notifications', // /home/notifications
+                    builder: (context, state) {
+                      return const NotificationsPage();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // The route branch for the 2nd Tab
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/courses', // Explicit path for courses tab
+                builder: (BuildContext context, GoRouterState state) =>
+                    const CoursesPage(),
+                routes: [
+                  GoRoute(
+                    path: 'details', // /courses/details
+                    builder: (context, state) {
+                      return const CourseDetailsPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'video',
+                    builder: (context, state) {
+                      return const CourseVideoPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'resource-details',
+                    builder: (context, state) {
+                      return const ResourceDetailsPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'lesson-completion',
+                    builder: (context, state) {
+                      return const LessonCompletionPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'quiz',
+                    builder: (context, state) {
+                      return const QuizPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'complete',
+                    builder: (context, state) {
+                      return const CourseCompletePage();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // The route branch for the 3rd Tab
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/progress',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const ProgressPage(),
+              ),
+            ],
+          ),
+
+          // The route branch for the 4th Tab
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/community',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const CommunityPage(),
+                routes: [
+                  GoRoute(
+                    path: 'post-details',
+                    builder: (context, state) {
+                      return const PostDetailsPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'create-post',
+                    builder: (context, state) {
+                      return const CreatePostPage();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          // The route branch for the 5th Tab
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/profile',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const ProfilePage(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );

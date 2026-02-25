@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
-import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../routes/app_routes.dart';
 
 class CourseDetailsPage extends StatelessWidget {
@@ -165,16 +164,6 @@ class CourseDetailsPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 1, // 'Courses' tab is active
-        onTap: (index) {
-          if (index == 0) context.go(AppRoutes.home);
-          if (index == 1) {
-            context.go(AppRoutes.home);
-          } // Basic navigation back to main layout for now
-          // Ideally navigation logic would be centralized or passed down
-        },
       ),
     );
   }

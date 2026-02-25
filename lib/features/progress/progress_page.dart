@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../routes/app_routes.dart';
 import 'progress_controller.dart';
 
 class ProgressPage extends StatelessWidget {
@@ -17,6 +19,7 @@ class ProgressPage extends StatelessWidget {
         child: CustomAppBar(
           title: 'Progress & Achievements',
           showBackButton: true,
+          onBackCallback: () => context.go(AppRoutes.home),
           actions: [
             Stack(
               alignment: Alignment.topRight,

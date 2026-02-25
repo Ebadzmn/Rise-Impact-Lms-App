@@ -18,7 +18,8 @@ class CoursesPage extends StatelessWidget {
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: CustomAppBar(
           title: 'Courses',
-          showBackButton: false, // Main tab, no back button usually
+          showBackButton: true,
+          onBackCallback: () => context.go(AppRoutes.home),
           actions: [
             Stack(
               children: [

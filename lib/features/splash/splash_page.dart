@@ -167,10 +167,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: const Icon(
-        Icons.volunteer_activism,
-        size: 60,
-        color: Color(0xFF576045),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Image.asset(
+          'assets/images/riselogo.png',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

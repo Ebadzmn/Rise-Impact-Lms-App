@@ -292,7 +292,7 @@ class HomePage extends StatelessWidget {
                       subtitle: 'Explore all topics',
                       color: const Color(0xFF6A7554), // Sage Green
                       onTap: () {
-                        // TODO: Navigate to courses
+                        context.go('/courses');
                       },
                     ),
                   ),
@@ -304,7 +304,7 @@ class HomePage extends StatelessWidget {
                       subtitle: 'Track achievements',
                       color: const Color(0xFFD88B2F), // Mustard
                       onTap: () {
-                        // TODO: Navigate to progress
+                        context.go('/progress');
                       },
                     ),
                   ),
