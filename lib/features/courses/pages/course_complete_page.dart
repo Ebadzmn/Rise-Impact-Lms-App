@@ -29,7 +29,7 @@ class _CourseCompletePageState extends State<CourseCompletePage> {
         child: CustomAppBar(
           title: 'Course Complete',
           showBackButton: true,
-          onBackCallback: () => context.go(AppRoutes.home),
+          onBackCallback: () => context.pop(),
         ),
       ),
       body: SafeArea(
