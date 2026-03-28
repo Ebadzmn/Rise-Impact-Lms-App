@@ -117,16 +117,49 @@ class SignupPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Age
+                  // Gender
+                  Obx(
+                    () => DropdownButtonFormField<String>(
+                      initialValue: controller.gender.value,
+                      decoration: InputDecoration(
+                        labelText: 'Gender *',
+                        prefixIcon: const Icon(Icons.people_outline, color: Colors.grey),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'male', child: Text('Male')),
+                        DropdownMenuItem(value: 'female', child: Text('Female')),
+                        DropdownMenuItem(value: 'other', child: Text('Other')),
+                      ],
+                      onChanged: controller.onGenderChanged,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Date of Birth
                   Obx(
                     () => CustomTextField(
-                      label: 'Age (16-22) *',
-                      hint: 'Enter your age',
-                      controller: controller.ageController,
-                      validator: controller.validateAge,
-                      onChanged: controller.onAgeChanged,
-                      showSuccessState: controller.isAgeValid.value,
-                      keyboardType: TextInputType.number,
+                      label: 'Date of Birth *',
+                      hint: 'YYYY-MM-DD',
+                      controller: controller.dobController,
+                      validator: controller.validateDob,
+                      onChanged: controller.onDobChanged,
+                      showSuccessState: controller.isDobValid.value,
+                      readOnly: true,
+                      onTap: () => controller.selectDate(context),
                       prefixIcon: const Icon(
                         Icons.calendar_today_outlined,
                         color: Colors.grey,
@@ -162,31 +195,7 @@ class SignupPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Confirm Password
-                  Obx(
-                    () => CustomTextField(
-                      label: 'Confirm Password *',
-                      hint: 'Confirm your password',
-                      controller: controller.confirmPasswordController,
-                      validator: controller.validateConfirmPassword,
-                      onChanged: controller.onConfirmPasswordChanged,
-                      showSuccessState: controller.isConfirmPasswordValid.value,
-                      obscureText: !controller.isConfirmPasswordVisible.value,
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Colors.grey,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.isConfirmPasswordVisible.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: controller.toggleConfirmPasswordVisibility,
-                      ),
-                    ),
-                  ),
+
                   const SizedBox(height: 32),
 
                   // Create Account Button

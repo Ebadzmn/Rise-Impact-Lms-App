@@ -1,15 +1,21 @@
-// class ApiEndpoints {
-//   ApiEndpoints._();
+class ApiEndpoints {
+  ApiEndpoints._();
 
-//   // Base URL
-//   static const String baseUrl = 'https://api.example.com';
+  // Base URL – change this to your actual backend
+  static const String baseUrl = 'http://10.10.7.33:5003/api/v1';
 
-//   // Auth endpoints
-//   static const String login = '/auth/login';
-//   static const String signup = '/auth/signup';
-//   static const String logout = '/auth/logout';
+  // Auth
+  static const String login = '/auth/login';
+  static const String signup = '/users';
+  static const String verifyOtp = '/auth/verify-email';
+  static const String logout = '/auth/logout';
+  static const String refreshToken = '/auth/refresh-token';
 
-//   // User endpoints
-//   static const String profile = '/user/profile';
-//   static const String updateProfile = '/user/update';
-// }
+  // User
+  static const String profile = '/users/profile';
+  static const String updateProfile = '/users/update';
+
+  // Courses
+  static const String getCourses = '/courses';
+  static const String bulkEnrollment = '/enrollments/bulk';
+}

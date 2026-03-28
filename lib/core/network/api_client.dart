@@ -1,54 +1,201 @@
-// import 'package:get/get.dart';
-// import 'api_endpoints.dart';
-// import 'api_interceptor.dart';
+import 'dart:convert';
+import 'dart:io';
 
-// class ApiClient extends GetConnect {
-//   @override
-//   void onInit() {
-//     httpClient.baseUrl = ApiEndpoints.baseUrl;
-//     httpClient.defaultContentType = 'application/json';
-//     httpClient.timeout = const Duration(seconds: 30);
+import 'package:dio/dio.dart';
 
-//     // Add request interceptor
-//     httpClient.addRequestModifier<dynamic>(ApiInterceptor.requestInterceptor);
+import 'api_interceptor.dart';
 
-//     // Add response interceptor
-//     httpClient.addResponseModifier(ApiInterceptor.responseInterceptor);
+/// Central Dio-based network caller.
+///
+/// Usage (from a Repository):
+/// ```dart
+/// final _api = ApiClient.instance;
+///
+/// final res = await _api.post(
+///   ApiEndpoints.login,
+///   body: {'email': 'a@b.com', 'password': '123'},
+/// );
+/// ```
+///
+/// Every method throws [NetworkException] on failure — never returns null.
+class ApiClient {
+  ApiClient._() : _dio = buildDio();
 
-//     super.onInit();
-//   }
+  // ── Singleton ──────────────────────────────────────────────────────────────
+  static final ApiClient instance = ApiClient._();
 
-//   // GET request
-//   Future<Response> getRequest(
-//     String url, {
-//     Map<String, String>? headers,
-//   }) async {
-//     return await get(url, headers: headers);
-//   }
+  final Dio _dio;
 
-//   // POST request
-//   Future<Response> postRequest(
-//     String url,
-//     dynamic body, {
-//     Map<String, String>? headers,
-//   }) async {
-//     return await post(url, body, headers: headers);
-//   }
+  // ══════════════════════════════════════════════════════════════════════════
+  // HTTP METHODS
+  // ══════════════════════════════════════════════════════════════════════════
 
-//   // PUT request
-//   Future<Response> putRequest(
-//     String url,
-//     dynamic body, {
-//     Map<String, String>? headers,
-//   }) async {
-//     return await put(url, body, headers: headers);
-//   }
+  /// GET request.
+  ///
+  /// [url]   – relative or absolute endpoint (e.g. `/user/profile`).
+  /// [query] – optional query parameters appended to the URL.
+  Future<Response<dynamic>> get(
+    String url, {
+    Map<String, dynamic>? query,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.get(
+        url,
+        queryParameters: query,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
 
-//   // DELETE request
-//   Future<Response> deleteRequest(
-//     String url, {
-//     Map<String, String>? headers,
-//   }) async {
-//     return await delete(url, headers: headers);
-//   }
-// }
+  /// POST request.
+  Future<Response<dynamic>> post(
+    String url, {
+    dynamic body,
+    Map<String, dynamic>? query,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.post(
+        url,
+        data: body,
+        queryParameters: query,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  /// PUT request.
+  Future<Response<dynamic>> put(
+    String url, {
+    dynamic body,
+    Map<String, dynamic>? query,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.put(
+        url,
+        data: body,
+        queryParameters: query,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  /// PATCH request.
+  Future<Response<dynamic>> patch(
+    String url, {
+    dynamic body,
+    Map<String, dynamic>? query,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.patch(
+        url,
+        data: body,
+        queryParameters: query,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  /// DELETE request.
+  Future<Response<dynamic>> delete(
+    String url, {
+    dynamic body,
+    Map<String, dynamic>? query,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.delete(
+        url,
+        data: body,
+        queryParameters: query,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MULTIPART / FILE UPLOAD
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// POST with multipart form-data.
+  ///
+  /// [fields] – plain text fields (will be JSON-encoded).
+  /// [files]  – map of field-name → [File] to attach.
+  ///
+  /// Example:
+  /// ```dart
+  /// await _api.postMultipart(
+  ///   ApiEndpoints.uploadAvatar,
+  ///   fields: {'userId': '123'},
+  ///   files: {'avatar': File('/path/to/photo.jpg')},
+  /// );
+  /// ```
+  Future<Response<dynamic>> postMultipart(
+    String url, {
+    Map<String, dynamic>? fields,
+    Map<String, File>? files,
+    Map<String, dynamic>? query,
+  }) async {
+    try {
+      final formMap = <String, dynamic>{};
+
+      if (fields != null && fields.isNotEmpty) {
+        formMap['data'] = jsonEncode(fields);
+      }
+
+      if (files != null) {
+        for (final entry in files.entries) {
+          formMap[entry.key] = await MultipartFile.fromFile(
+            entry.value.path,
+            filename: entry.value.uri.pathSegments.last,
+          );
+        }
+      }
+
+      final formData = FormData.fromMap(formMap);
+
+      return await _dio.post(
+        url,
+        data: formData,
+        queryParameters: query,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+        ),
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Manually override the auth token (e.g. right after login).
+  void setToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  /// Remove the auth token (e.g. on logout).
+  void clearToken() {
+    _dio.options.headers.remove('Authorization');
+  }
+
+  /// Add a custom base-level interceptor at runtime.
+  void addInterceptor(Interceptor interceptor) {
+    _dio.interceptors.add(interceptor);
+  }
+}

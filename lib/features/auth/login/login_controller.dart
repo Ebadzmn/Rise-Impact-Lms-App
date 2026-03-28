@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lms_riseandimpact/routes/app_router.dart';
 import '../../../routes/app_routes.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_endpoints.dart';
+import '../../../core/network/api_interceptor.dart';
+import '../../../core/services/storage_service.dart';
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -40,12 +46,43 @@ class LoginController extends GetxController {
       try {
         isLoading.value = true;
 
-        // TODO: Implement actual login API call
-        await Future.delayed(const Duration(seconds: 2));
+        final response = await ApiClient.instance.post(
+          ApiEndpoints.login,
+          body: {
+            "email": emailController.text.trim(),
+            "password": passwordController.text,
+          },
+        );
 
-        AppRouter.router.go(AppRoutes.topics);
-      } catch (e) {
-        Get.snackbar('Error', 'Login failed. Please try again.');
+        Map<String, dynamic> responseMap = {};
+        if (response.data is String) {
+          try {
+            responseMap = jsonDecode(response.data) as Map<String, dynamic>;
+          } catch (_) {}
+        } else if (response.data is Map) {
+          responseMap = Map<String, dynamic>.from(response.data);
+        }
+
+        Map<String, dynamic> payload = responseMap;
+        if (responseMap.containsKey('data') && responseMap['data'] is Map) {
+          payload = Map<String, dynamic>.from(responseMap['data']);
+        }
+
+        final accessToken = payload['accessToken']?.toString();
+        final refreshToken = payload['refreshToken']?.toString();
+        
+        if (accessToken != null && refreshToken != null && accessToken.isNotEmpty) {
+          final storage = Get.find<StorageService>();
+          storage.saveTokens(accessToken, refreshToken);
+          AppRouter.router.go(AppRoutes.topics);
+        } else {
+          debugPrint('Login Token Error: Expected tokens not found in payload: $payload');
+          Get.snackbar('Error', 'Invalid response from server');
+        }
+
+      } catch (e, stack) {
+        debugPrint('Login Exception: $e\n$stack');
+        Get.snackbar('Error', e is NetworkException ? e.message : 'Login failed. Please try again.');
       } finally {
         isLoading.value = false;
       }

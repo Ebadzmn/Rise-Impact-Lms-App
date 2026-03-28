@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
 import '../../routes/app_router.dart';
+import '../../core/services/storage_service.dart';
 
 class SplashController extends GetxController {
   @override
@@ -12,8 +13,13 @@ class SplashController extends GetxController {
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 3));
 
-    // TODO: Check auth status and navigate accordingly
-    // For now, go to welcome
-    AppRouter.router.go(AppRoutes.welcome);
+    final storage = Get.find<StorageService>();
+    final token = storage.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      AppRouter.router.go(AppRoutes.topics);
+    } else {
+      AppRouter.router.go(AppRoutes.welcome);
+    }
   }
 }

@@ -3,32 +3,33 @@ import 'package:get/get.dart';
 import 'package:lms_riseandimpact/routes/app_router.dart';
 import '../../../routes/app_routes.dart';
 
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_endpoints.dart';
+
 class SignupController extends GetxController {
   final formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
-  final ageController = TextEditingController();
+  final dobController = TextEditingController();
+  final RxString gender = 'male'.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isPasswordVisible = false.obs;
-  final RxBool isConfirmPasswordVisible = false.obs;
+
 
   // Validation States
   final RxBool isNameValid = false.obs;
   final RxBool isEmailValid = false.obs;
-  final RxBool isAgeValid = false.obs;
+  final RxBool isDobValid = false.obs;
   final RxBool isPasswordValid = false.obs;
-  final RxBool isConfirmPasswordValid = false.obs;
+
 
   void togglePasswordVisibility() {
     isPasswordVisible.toggle();
   }
 
-  void toggleConfirmPasswordVisibility() {
-    isConfirmPasswordVisible.toggle();
-  }
+
 
   void onNameChanged(String val) {
     isNameValid.value = val.isNotEmpty;
@@ -38,22 +39,32 @@ class SignupController extends GetxController {
     isEmailValid.value = GetUtils.isEmail(val);
   }
 
-  void onAgeChanged(String val) {
-    final age = int.tryParse(val);
-    isAgeValid.value = age != null && age >= 16 && age <= 22;
+  void onGenderChanged(String? val) {
+    if (val != null) {
+      gender.value = val;
+    }
+  }
+
+  void onDobChanged(String val) {
+    isDobValid.value = val.isNotEmpty;
+  }
+
+  Future<void> selectDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      final formattedDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      dobController.text = formattedDate;
+      onDobChanged(formattedDate);
+    }
   }
 
   void onPasswordChanged(String val) {
     isPasswordValid.value = val.length >= 6;
-    // Also re-validate confirm password if it has value
-    if (confirmPasswordController.text.isNotEmpty) {
-      onConfirmPasswordChanged(confirmPasswordController.text);
-    }
-  }
-
-  void onConfirmPasswordChanged(String val) {
-    isConfirmPasswordValid.value =
-        val.isNotEmpty && val == passwordController.text;
   }
 
   String? validateName(String? value) {
@@ -73,13 +84,9 @@ class SignupController extends GetxController {
     return null;
   }
 
-  String? validateAge(String? value) {
+  String? validateDob(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Age is required';
-    }
-    final age = int.tryParse(value);
-    if (age == null || age < 16 || age > 22) {
-      return 'Age must be between 16 and 22';
+      return 'Date of Birth is required';
     }
     return null;
   }
@@ -94,30 +101,27 @@ class SignupController extends GetxController {
     return null;
   }
 
-  String? validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Confirm Password is required';
-    }
-    if (value != passwordController.text) {
-      return 'Passwords do not match';
-    }
-    return null;
-  }
+
 
   Future<void> signup() async {
     if (formKey.currentState?.validate() ?? false) {
-      if (passwordController.text != confirmPasswordController.text) {
-        Get.snackbar('Error', 'Passwords do not match');
-        return;
-      }
 
       try {
         isLoading.value = true;
 
-        // TODO: Implement actual signup API call
-        await Future.delayed(const Duration(seconds: 2));
+        await ApiClient.instance.post(
+          ApiEndpoints.signup,
+          body: {
+            "name": nameController.text.trim(),
+            "email": emailController.text.trim(),
+            "password": passwordController.text,
+            "gender": gender.value,
+            "dateOfBirth": dobController.text,
+          },
+        );
 
-        AppRouter.router.go(AppRoutes.topics);
+        Get.snackbar('Success', 'Registration successful');
+        AppRouter.router.push('${AppRoutes.otp}?email=${emailController.text}');
       } catch (e) {
         Get.snackbar('Error', 'Signup failed. Please try again.');
       } finally {
@@ -131,8 +135,7 @@ class SignupController extends GetxController {
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    confirmPasswordController.dispose();
-    ageController.dispose();
+    dobController.dispose();
     super.onClose();
   }
 }

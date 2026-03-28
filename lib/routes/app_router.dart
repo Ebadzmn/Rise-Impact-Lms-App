@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_riseandimpact/features/topics/topics_page.dart';
 
@@ -9,6 +10,7 @@ import '../features/welcome/welcome_page.dart';
 import '../features/welcome/welcome_binding.dart';
 import '../features/auth/login/login_page.dart';
 import '../features/auth/signup/signup_page.dart';
+import '../features/auth/otp/otp_page.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/notifications/notifications_page.dart';
 import '../features/courses/course_details_page.dart';
@@ -27,8 +29,7 @@ import '../features/community/community_page.dart';
 import '../features/profile/profile_page.dart';
 
 class AppRouter {
-  static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey = Get.key;
 
   static final GoRouter router = GoRouter(
     navigatorKey: navigatorKey,
@@ -58,6 +59,13 @@ class AppRouter {
         path: AppRoutes.signup,
         builder: (context, state) {
           return const SignupPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.otp,
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'] ?? '';
+          return OtpPage(email: email);
         },
       ),
       GoRoute(
