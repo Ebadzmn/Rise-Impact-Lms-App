@@ -8,6 +8,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_interceptor.dart';
 import '../../../core/services/storage_service.dart';
+import '../../profile/profile_controller.dart';
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -74,7 +75,24 @@ class LoginController extends GetxController {
         if (accessToken != null && refreshToken != null && accessToken.isNotEmpty) {
           final storage = Get.find<StorageService>();
           storage.saveTokens(accessToken, refreshToken);
-          AppRouter.router.go(AppRoutes.topics);
+          
+          // Fetch profile to check onboarding status
+          try {
+            final profileController = Get.put(ProfileController());
+            await profileController.fetchData();
+            
+            final onboardingCompleted = profileController.profileData.value?.onboardingCompleted ?? true;
+            
+            if (onboardingCompleted) {
+              AppRouter.router.go(AppRoutes.home);
+            } else {
+              AppRouter.router.go(AppRoutes.topics);
+            }
+          } catch (e) {
+            debugPrint('Post-Login Profile Fetch Error: $e');
+            // Fallback to Home if profile check fails
+            AppRouter.router.go(AppRoutes.home);
+          }
         } else {
           debugPrint('Login Token Error: Expected tokens not found in payload: $payload');
           Get.snackbar('Error', 'Invalid response from server');

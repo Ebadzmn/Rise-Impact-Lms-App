@@ -10,6 +10,7 @@ class ProfileModel {
   final int totalPoints;
   final int streakCurrent;
   final int streakLongest;
+  final bool onboardingCompleted;
 
   ProfileModel({
     required this.id,
@@ -23,6 +24,7 @@ class ProfileModel {
     required this.totalPoints,
     required this.streakCurrent,
     required this.streakLongest,
+    required this.onboardingCompleted,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,8 @@ class ProfileModel {
       totalPoints: int.tryParse(data['totalPoints']?.toString() ?? '0') ?? 0,
       streakCurrent: int.tryParse(streak['current']?.toString() ?? '0') ?? 0,
       streakLongest: int.tryParse(streak['longest']?.toString() ?? '0') ?? 0,
+      onboardingCompleted: (data['onboardingCompleted'] == true ||
+          data['onboardingCompleted']?.toString().toLowerCase() == 'true'),
     );
   }
 }
