@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 
-import 'api_interceptor.dart';
+import '../../../core/network/api_interceptor.dart';
 
 /// Central Dio-based network caller.
 ///
@@ -152,8 +151,8 @@ class ApiClient {
     try {
       final formMap = <String, dynamic>{};
 
-      if (fields != null && fields.isNotEmpty) {
-        formMap['data'] = jsonEncode(fields);
+      if (fields != null) {
+        formMap.addAll(fields);
       }
 
       if (files != null) {
@@ -168,6 +167,44 @@ class ApiClient {
       final formData = FormData.fromMap(formMap);
 
       return await _dio.post(
+        url,
+        data: formData,
+        queryParameters: query,
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+        ),
+      );
+    } on DioException catch (e) {
+      throw NetworkException.fromDioError(e);
+    }
+  }
+
+  /// PATCH with multipart form-data (fields as top-level keys).
+  Future<Response<dynamic>> patchMultipart(
+    String url, {
+    Map<String, dynamic>? fields,
+    Map<String, File>? files,
+    Map<String, dynamic>? query,
+  }) async {
+    try {
+      final formMap = <String, dynamic>{};
+
+      if (fields != null) {
+        formMap.addAll(fields);
+      }
+
+      if (files != null) {
+        for (final entry in files.entries) {
+          formMap[entry.key] = await MultipartFile.fromFile(
+            entry.value.path,
+            filename: entry.value.uri.pathSegments.last,
+          );
+        }
+      }
+
+      final formData = FormData.fromMap(formMap);
+
+      return await _dio.patch(
         url,
         data: formData,
         queryParameters: query,

@@ -20,13 +20,24 @@ import "../features/courses/pages/lesson_completion_page.dart";
 import "../features/courses/pages/quiz_page.dart";
 import "../features/courses/pages/course_complete_page.dart";
 import '../features/dashboard/dashboard_binding.dart';
+import '../features/community/community_page.dart';
+import '../features/community/community_binding.dart';
 import '../features/community/post_details_page.dart';
+import '../features/community/post_details_binding.dart';
 import '../features/community/create_post_page.dart';
+import '../features/community/create_post_binding.dart';
 import '../features/home/home_page.dart';
 import '../features/courses/courses_page.dart';
 import '../features/progress/progress_page.dart';
-import '../features/community/community_page.dart';
+import '../features/community/my_posts_page.dart';
+import '../features/community/my_posts_binding.dart';
 import '../features/profile/profile_page.dart';
+import '../features/community/edit_post_page.dart';
+import '../features/community/edit_post_binding.dart';
+import '../features/community/models/post_model.dart';
+import '../features/profile/profile_binding.dart';
+import '../features/legal/legal_details_page.dart';
+import '../features/legal/legal_details_binding.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = Get.key;
@@ -168,19 +179,39 @@ class AppRouter {
             routes: <RouteBase>[
               GoRoute(
                 path: '/community',
-                builder: (BuildContext context, GoRouterState state) =>
-                    const CommunityPage(),
+                builder: (BuildContext context, GoRouterState state) {
+                  CommunityBinding().dependencies();
+                  return const CommunityPage();
+                },
                 routes: [
                   GoRoute(
-                    path: 'post-details',
+                    path: 'post-details/:id',
                     builder: (context, state) {
+                      final id = state.pathParameters['id'] ?? '';
+                      PostDetailsBinding(postId: id).dependencies();
                       return const PostDetailsPage();
                     },
                   ),
                   GoRoute(
                     path: 'create-post',
                     builder: (context, state) {
+                      CreatePostBinding().dependencies();
                       return const CreatePostPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'my-posts',
+                    builder: (context, state) {
+                      MyPostsBinding().dependencies();
+                      return const MyPostsPage();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'edit-post',
+                    builder: (context, state) {
+                      final post = state.extra as PostModel;
+                      EditPostBinding(post: post).dependencies();
+                      return const EditPostPage();
                     },
                   ),
                 ],
@@ -193,8 +224,20 @@ class AppRouter {
             routes: <RouteBase>[
               GoRoute(
                 path: '/profile',
-                builder: (BuildContext context, GoRouterState state) =>
-                    const ProfilePage(),
+                builder: (BuildContext context, GoRouterState state) {
+                  ProfileBinding().dependencies();
+                  return const ProfilePage();
+                },
+                routes: [
+                  GoRoute(
+                    path: 'legal/:slug',
+                    builder: (context, state) {
+                      final slug = state.pathParameters['slug'] ?? '';
+                      LegalDetailsBinding(slug: slug).dependencies();
+                      return const LegalDetailsPage();
+                    },
+                  ),
+                ],
               ),
             ],
           ),

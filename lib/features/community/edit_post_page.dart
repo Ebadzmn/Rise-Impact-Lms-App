@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/widgets/custom_app_bar.dart';
-import 'controllers/create_post_controller.dart';
+import 'controllers/edit_post_controller.dart';
 import 'models/course_option_model.dart';
 
-class CreatePostPage extends GetView<CreatePostController> {
-  const CreatePostPage({super.key});
+class EditPostPage extends GetView<EditPostController> {
+  const EditPostPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class CreatePostPage extends GetView<CreatePostController> {
       backgroundColor: Colors.grey.shade50,
       appBar: const PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(title: 'Create a post', showBackButton: true),
+        child: CustomAppBar(title: 'Update Post', showBackButton: true),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -39,7 +39,7 @@ class CreatePostPage extends GetView<CreatePostController> {
                 const SizedBox(height: 8),
                 _buildTextField(
                   controller: controller.titleController,
-                  hintText: "What's your question or topic?",
+                  hintText: "Update your question or topic?",
                 ),
                 const SizedBox(height: 24),
                 
@@ -52,14 +52,14 @@ class CreatePostPage extends GetView<CreatePostController> {
                 const SizedBox(height: 8),
                 _buildTextField(
                   controller: controller.contentController,
-                  hintText: 'Provide more details...',
+                  hintText: 'Update more details...',
                   maxLines: 6,
                 ),
                 const SizedBox(height: 24),
 
-                _buildInputLabel('Add Image (Optional)'),
+                _buildInputLabel('Post Image (Optional)'),
                 const SizedBox(height: 12),
-                Obx(() => _buildImagePicker()),
+                Obx(() => _buildImageSection()),
                 
                 const SizedBox(height: 32),
                 
@@ -67,7 +67,7 @@ class CreatePostPage extends GetView<CreatePostController> {
                   width: double.infinity,
                   height: 56,
                   child: Obx(() => ElevatedButton(
-                    onPressed: controller.isLoading.value ? null : () => controller.submitPost(),
+                    onPressed: controller.isLoading.value ? null : () => controller.submitUpdate(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE39D41), // Amber
                       foregroundColor: Colors.white,
@@ -83,7 +83,7 @@ class CreatePostPage extends GetView<CreatePostController> {
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
                         : const Text(
-                            'Create Post',
+                            'Update Post',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   )),
@@ -96,12 +96,13 @@ class CreatePostPage extends GetView<CreatePostController> {
     );
   }
 
-  Widget _buildImagePicker() {
+  Widget _buildImageSection() {
+    // If a new image is picked
     if (controller.selectedImage.value != null) {
       return Stack(
         children: [
           Container(
-            height: 150,
+            height: 180,
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -114,12 +115,51 @@ class CreatePostPage extends GetView<CreatePostController> {
           Positioned(
             top: 8,
             right: 8,
+            child: _buildRemoveButton(() => controller.removeImage()),
+          ),
+        ],
+      );
+    }
+
+    // If an existing image exists and hasn't been removed
+    if (controller.initialPost.image != null && !controller.removeImageFlag.value) {
+      return Stack(
+        children: [
+          Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: DecorationImage(
+                image: NetworkImage(controller.initialPost.image!),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: _buildRemoveButton(() => controller.removeImage()),
+          ),
+          Positioned(
+            bottom: 8,
+            right: 8,
             child: GestureDetector(
-              onTap: () => controller.removeImage(),
+              onTap: () => controller.pickImage(),
               child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, size: 14, color: Color(0xFF2C3E50)),
+                    SizedBox(width: 4),
+                    Text('Change', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+                  ],
+                ),
               ),
             ),
           ),
@@ -127,6 +167,7 @@ class CreatePostPage extends GetView<CreatePostController> {
       );
     }
 
+    // Default upload placeholder
     return GestureDetector(
       onTap: () => controller.pickImage(),
       child: Container(
@@ -145,6 +186,17 @@ class CreatePostPage extends GetView<CreatePostController> {
             Text('Upload Photo', style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRemoveButton(VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        child: const Icon(Icons.close, size: 18, color: Colors.white),
       ),
     );
   }
@@ -191,22 +243,43 @@ class CreatePostPage extends GetView<CreatePostController> {
           hint: Text('Select Course Name', style: TextStyle(color: Colors.grey.shade400, fontSize: 15)),
           icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade500),
           selectedItemBuilder: (BuildContext context) {
-            return controller.courseList.map<Widget>((item) {
-              return Container(alignment: Alignment.centerLeft, child: Text(item.title, style: const TextStyle(color: Color(0xFF2C3E50), fontSize: 15)));
+            final List<CourseOptionModel?> allOptions = [
+              null,
+              ...controller.courseList,
+            ];
+            return allOptions.map<Widget>((item) {
+              return Container(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item?.title ?? 'None',
+                  style: const TextStyle(color: Color(0xFF2C3E50), fontSize: 15),
+                ),
+              );
             }).toList();
           },
-          items: controller.courseList.map((value) {
-            bool isSelected = controller.selectedCourse.value?.id == value.id;
-            return DropdownMenuItem<CourseOptionModel>(
-              value: value,
+          items: [
+            // Null option to clear course
+            DropdownMenuItem<CourseOptionModel>(
+              value: null,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: BoxDecoration(color: isSelected ? const Color(0xFF869277) : Colors.transparent, borderRadius: BorderRadius.circular(8)),
-                child: Text(value.title, style: TextStyle(color: Colors.white, fontSize: 15)),
+                child: const Text('None', style: TextStyle(color: Colors.white, fontSize: 15)),
               ),
-            );
-          }).toList(),
+            ),
+            ...controller.courseList.map((value) {
+              bool isSelected = controller.selectedCourse.value?.id == value.id;
+              return DropdownMenuItem<CourseOptionModel>(
+                value: value,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(color: isSelected ? const Color(0xFF869277) : Colors.transparent, borderRadius: BorderRadius.circular(8)),
+                  child: Text(value.title, style: const TextStyle(color: Colors.white, fontSize: 15)),
+                ),
+              );
+            }).toList(),
+          ],
           onChanged: (newValue) => controller.selectedCourse.value = newValue,
         ),
       ),

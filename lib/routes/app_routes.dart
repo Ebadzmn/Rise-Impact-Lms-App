@@ -15,6 +15,9 @@ abstract class AppRoutes {
   static const String lessonCompletion = '/courses/lesson-completion';
   static const String quiz = '/courses/quiz';
   static const String courseComplete = '/courses/complete';
-  static const String postDetails = '/community/post-details';
+  static const String postDetails = '/community/post-details/:id';
   static const String createPost = '/community/create-post';
+  static const String myPosts = '/community/my-posts';
+  static const String editPost = '/community/edit-post';
+  static const String legalDetails = '/profile/legal/:slug';
 }
