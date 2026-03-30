@@ -77,11 +77,15 @@ class BadgeResponseModel {
 class BadgeModel {
   final String name;
   final String iconName;
+  final String description;
+  final bool earned;
   final String earnedAt;
 
   BadgeModel({
     required this.name,
     required this.iconName,
+    required this.description,
+    required this.earned,
     required this.earnedAt,
   });
 
@@ -89,6 +93,8 @@ class BadgeModel {
     return BadgeModel(
       name: json['name']?.toString() ?? 'Unknown Badge',
       iconName: json['iconName']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      earned: json['earned'] == true || json['earned']?.toString().toLowerCase() == 'true',
       earnedAt: json['earnedAt']?.toString() ?? '',
     );
   }

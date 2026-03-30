@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/loader.dart';
 import '../../routes/app_routes.dart';
+import '../../data/models/course_model.dart';
 import 'courses_controller.dart';
 
 class CoursesPage extends StatelessWidget {
@@ -73,6 +75,7 @@ class CoursesPage extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: TextField(
+                  onChanged: controller.onSearchChanged,
                   decoration: InputDecoration(
                     hintText: 'Search courses...',
                     hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -97,6 +100,8 @@ class CoursesPage extends StatelessWidget {
                 separatorBuilder: (context, index) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final filter = controller.filters[index];
+                  final displayName =
+                      controller.filterDisplayNames[filter] ?? filter;
                   return Obx(() {
                     final isSelected =
                         controller.selectedFilter.value == filter;
@@ -114,7 +119,7 @@ class CoursesPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          filter,
+                          displayName,
                           style: TextStyle(
                             color: isSelected ? Colors.white : Colors.black54,
                             fontWeight: FontWeight.bold,
@@ -132,45 +137,39 @@ class CoursesPage extends StatelessWidget {
 
             // Course List
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  _buildCourseCard(
-                    context,
-                    title: 'Credit Mastery',
-                    description:
-                        'Master credit scores, reports, and building credit wisely',
-                    tag: 'Beginner',
-                    duration: '4 weeks',
-                    progress: 0.65,
-                    percentText: '65%',
+              child: Obx(() {
+                if (controller.isLoading.value) {
+                  return _buildShimmerList();
+                }
+
+                if (controller.courseList.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.separated(
+                  controller: controller.scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
                   ),
-                  const SizedBox(height: 20),
-                  _buildCourseCard(
-                    context,
-                    title: 'Business Building 101',
-                    description:
-                        'Learn to create business plans and launch your venture',
-                    tag: 'Intermediate',
-                    duration: '6 weeks',
-                    progress: 0.30,
-                    percentText: '30%',
-                  ),
-                  const SizedBox(height: 20),
-                  // Example completed course
-                  _buildCourseCard(
-                    context,
-                    title: 'Financial Basics',
-                    description: 'Understanding budgeting and saving.',
-                    tag: 'Beginner',
-                    duration: '2 weeks',
-                    progress: 1.0,
-                    percentText: '100%',
-                    isCompleted: true,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                  itemCount:
+                      controller.courseList.length +
+                      (controller.isMoreLoading.value ? 1 : 0),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 20),
+                  itemBuilder: (context, index) {
+                    if (index < controller.courseList.length) {
+                      final course = controller.courseList[index];
+                      return _buildCourseCard(context, controller, course);
+                    } else {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Loader(size: 30),
+                      );
+                    }
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -178,16 +177,83 @@ class CoursesPage extends StatelessWidget {
     );
   }
 
+  Widget _buildShimmerList() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: 5,
+      separatorBuilder: (context, index) => const SizedBox(height: 20),
+      itemBuilder: (context, index) => _buildShimmerCard(),
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 20,
+            width: 150,
+            margin: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          Container(
+            height: 15,
+            width: 250,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 80, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'No courses found',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try adjusting your search or filters',
+            style: TextStyle(color: Colors.grey.shade400),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCourseCard(
-    BuildContext context, {
-    required String title,
-    required String description,
-    required String tag,
-    required String duration,
-    required double progress,
-    required String percentText,
-    bool isCompleted = false,
-  }) {
+    BuildContext context,
+    CoursesController controller,
+    CourseModel course,
+  ) {
+    final bool isEnrolled = course.enrollment != null;
+    final String status = course.enrollment?.status ?? 'NONE';
+    final int progress = course.enrollment?.completionPercentage ?? 0;
+    final bool isCompleted = status == 'COMPLETED' || progress >= 100;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -211,7 +277,7 @@ class CoursesPage extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  course.title,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -224,7 +290,7 @@ class CoursesPage extends StatelessWidget {
                   padding: EdgeInsets.only(left: 8.0),
                   child: Icon(
                     Icons.check_circle_outline_rounded,
-                    color: Color(0xFF00C853), // Green color for checkmark
+                    color: Color(0xFF00C853),
                     size: 28,
                   ),
                 ),
@@ -232,12 +298,14 @@ class CoursesPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            description,
+            course.description,
             style: const TextStyle(
               color: Colors.grey,
               fontSize: 14,
               height: 1.4,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 16),
           Row(
@@ -252,7 +320,7 @@ class CoursesPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  tag,
+                  '${course.totalLessons} Lessons',
                   style: TextStyle(
                     color: Colors.grey.shade700,
                     fontSize: 12,
@@ -261,50 +329,68 @@ class CoursesPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Icon(Icons.access_time, size: 16, color: Colors.grey.shade500),
+              Icon(Icons.star_rounded, size: 16, color: Colors.amber.shade600),
               const SizedBox(width: 4),
               Text(
-                duration,
+                course.averageRating.toStringAsFixed(1),
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.people_outline, size: 16, color: Colors.grey.shade500),
+              const SizedBox(width: 4),
+              Text(
+                '${course.enrollmentCount} Students',
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Progress',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF576045),
+          if (isEnrolled) ...[
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Progress (${status.toLowerCase().capitalizeFirst})',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF576045),
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-              Text(
-                percentText,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF576045),
+                Text(
+                  '$progress%',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF576045),
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey.shade200,
-              color: const Color(0xFFD88B2F), // Mustard
-              minHeight: 8,
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress / 100,
+                backgroundColor: Colors.grey.shade200,
+                color: const Color(0xFFD88B2F),
+                minHeight: 8,
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                context.push(AppRoutes.courseDetails);
+                if (isEnrolled) {
+                  context.pushNamed(
+                    AppRoutes.studentCourseDetails,
+                    pathParameters: {'slug': course.slug},
+                  );
+                } else {
+                  controller.enrollInCourse(context, course);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD88B2F),
@@ -319,14 +405,18 @@ class CoursesPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isCompleted
-                        ? Icons.play_arrow_outlined
-                        : Icons.play_arrow_rounded,
+                    isEnrolled
+                        ? (isCompleted
+                              ? Icons.play_arrow_outlined
+                              : Icons.play_arrow_rounded)
+                        : Icons.add_circle_outline_rounded,
                     size: 24,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    isCompleted ? 'Review Course' : 'Continue',
+                    isEnrolled
+                        ? (isCompleted ? 'Review Course' : 'Continue')
+                        : 'Enroll Course',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

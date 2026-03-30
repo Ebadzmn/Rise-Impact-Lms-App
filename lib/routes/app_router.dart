@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lms_riseandimpact/features/topics/topics_page.dart';
 
+import '../data/models/quiz_model.dart';
 import 'app_routes.dart';
 import '../features/splash/splash_page.dart';
 import '../features/splash/splash_binding.dart';
@@ -19,6 +20,11 @@ import "../features/courses/resource_details_page.dart";
 import "../features/courses/pages/lesson_completion_page.dart";
 import "../features/courses/pages/quiz_page.dart";
 import "../features/courses/pages/course_complete_page.dart";
+import '../features/courses/course_details_binding.dart';
+import '../features/courses/lesson_binding.dart';
+import '../features/courses/lesson_page.dart';
+import '../features/courses/quiz_binding.dart';
+import '../features/courses/pages/quiz_result_page.dart';
 import '../features/dashboard/dashboard_binding.dart';
 import '../features/community/community_page.dart';
 import '../features/community/community_binding.dart';
@@ -125,7 +131,28 @@ class AppRouter {
                   GoRoute(
                     path: 'details', // /courses/details
                     builder: (context, state) {
-                      return const CourseDetailsPage();
+                      const identifier = 'default'; // Fallback
+                      CourseDetailsBinding(identifier: identifier).dependencies();
+                      return const CourseDetailsPage(identifier: identifier);
+                    },
+                  ),
+                  GoRoute(
+                    name: AppRoutes.studentCourseDetails,
+                    path: ':slug/student-detail', // /courses/:slug/student-detail
+                    builder: (context, state) {
+                      final identifier = state.pathParameters['slug'] ?? '';
+                      CourseDetailsBinding(identifier: identifier).dependencies();
+                      return CourseDetailsPage(identifier: identifier);
+                    },
+                  ),
+                  GoRoute(
+                    name: AppRoutes.lessonContent,
+                    path: ':courseId/lessons/:lessonId',
+                    builder: (context, state) {
+                      final courseId = state.pathParameters['courseId'] ?? '';
+                      final lessonId = state.pathParameters['lessonId'] ?? '';
+                      LessonBinding(courseId: courseId, lessonId: lessonId).dependencies();
+                      return LessonPage(courseId: courseId, lessonId: lessonId);
                     },
                   ),
                   GoRoute(
@@ -147,9 +174,20 @@ class AppRouter {
                     },
                   ),
                   GoRoute(
-                    path: 'quiz',
+                    name: AppRoutes.quiz,
+                    path: 'quiz/:id',
                     builder: (context, state) {
-                      return const QuizPage();
+                      final id = state.pathParameters['id'] ?? '';
+                      QuizBinding(quizId: id).dependencies();
+                      return QuizPage(quizId: id);
+                    },
+                  ),
+                  GoRoute(
+                    name: AppRoutes.quizResult,
+                    path: 'quiz-result',
+                    builder: (context, state) {
+                      final result = state.extra as QuizResultModel;
+                      return QuizResultPage(result: result);
                     },
                   ),
                   GoRoute(
@@ -185,6 +223,7 @@ class AppRouter {
                 },
                 routes: [
                   GoRoute(
+                    name: AppRoutes.postDetails,
                     path: 'post-details/:id',
                     builder: (context, state) {
                       final id = state.pathParameters['id'] ?? '';
@@ -230,6 +269,7 @@ class AppRouter {
                 },
                 routes: [
                   GoRoute(
+                    name: AppRoutes.legalDetails,
                     path: 'legal/:slug',
                     builder: (context, state) {
                       final slug = state.pathParameters['slug'] ?? '';

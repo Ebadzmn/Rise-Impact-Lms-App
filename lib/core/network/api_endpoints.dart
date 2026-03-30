@@ -16,11 +16,28 @@ class ApiEndpoints {
   static const String updateProfile = '/users/profile';
   static const String changePassword = '/auth/change-password';
   static const String studentHome = '/student/home';
+  static const String studentProgress = '/student/progress';
+  static const String activityCalendar = '/activity/calendar';
 
   // Courses
   static const String getCourses = '/courses';
+  static const String browseCourses = '/courses/browse';
+  static const String studentCourseDetail = '/courses/:identifier/student-detail';
+  static const String getLesson = '/courses/:courseId/lessons/:lessonId';
+  static const String markLessonComplete = '/enrollments/:courseId/lessons/:lessonId/complete';
+  static const String enrollments = '/enrollments';
+  
+  // Quizzes
+  static const String startQuizAttempt = '/quizzes/:quizId/attempts';
+  static const String getQuizQuestions = '/quizzes/:quizId/student-view';
+  static const String submitQuizAttempt = '/quizzes/attempts/:attemptId/submit';
+  static const String getQuizResult = '/quizzes/attempts/:attemptId';
+  
   static const String courseOptions = '/courses/options';
   static const String bulkEnrollment = '/enrollments/bulk';
+
+  // Quizzes
+  static const String quizAttempts = '/quizzes/my-attempts';
 
   // Community
   static const String communityPosts = '/community/posts';

@@ -1,3 +1,8 @@
+import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
+import 'progress_model.dart';
+import 'quiz_attempt_model.dart';
+import '../profile/profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
@@ -171,16 +176,33 @@ class ProgressPage extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 3. Summary Cards
-              _buildSummaryCards(),
+              Obx(() {
+                if (controller.selectedTab.value != 0) {
+                  return const SizedBox.shrink();
+                }
+                if (controller.isLoading.value) {
+                  return _buildShimmerSummaryCards();
+                }
+                return Column(
+                  children: [
+                    _buildSummaryCards(controller.progressData.value),
+                    const SizedBox(height: 16),
+                    _buildStreakSection(controller.progressData.value),
+                  ],
+                );
+              }),
 
               const SizedBox(height: 32),
 
               // 4. Tab Content
-              Obx(
-                () => controller.selectedTab.value == 0
-                    ? _buildProgressTab()
-                    : _buildAchievementsTab(),
-              ),
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return _buildShimmerProgressTab();
+                }
+                return controller.selectedTab.value == 0
+                    ? _buildProgressTab(controller.progressData.value)
+                    : _buildAchievementsTab();
+              }),
 
               const SizedBox(height: 40),
             ],
@@ -190,102 +212,83 @@ class ProgressPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCards() {
+  Widget _buildSummaryCards(ProgressModel? data) {
     return Row(
       children: [
         Expanded(
           child: Container(
-            height: 100,
-            padding: const EdgeInsets.all(12),
+            height: 110,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF6A7554), // Dark Green
-              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF6A7554), Color(0xFF576045)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6A7554).withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Overall',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                const Text(
+                  'Overall Progress',
+                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
-                  '72%',
-                  style: TextStyle(
+                  '${data?.overallPercentage ?? 0}%',
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-                Text(
-                  'Completed',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: Container(
-            height: 100, // Same height
-            padding: const EdgeInsets.all(12),
+            height: 110,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE09F3E), // Mustard/Gold
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Points',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  '100',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Earned',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFE09F3E), Color(0xFFC17A26)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFC17A26).withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Container(
-            height: 100, // Same height
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF5722), // Orange
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Streak',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                const Text(
+                  'Points Earned',
+                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
-                  '0',
-                  style: TextStyle(
+                  '${data?.points ?? 0}',
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-                Text(
-                  'Days',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ],
             ),
@@ -295,7 +298,136 @@ class ProgressPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressTab() {
+  Widget _buildStreakSection(ProgressModel? data) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFF0F0F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Current Streak Large Display
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3E0),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              '🔥',
+              style: TextStyle(fontSize: 32),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Current Streak',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '${data?.streak.current ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Days',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Divider
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          const SizedBox(width: 16),
+          // Longest Streak Section
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Text(
+                'Personal Best',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Text('🏆', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${data?.streak.longest ?? 0} Days',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF6A7554),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressTab(ProgressModel? data) {
+    final controller = Get.find<ProgressController>();
+    if (data == null || data.courses.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Icon(Icons.info_outline, color: Colors.grey.shade400, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'No progress data available',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         // Progress by Topic
@@ -321,7 +453,7 @@ class ProgressPage extends StatelessWidget {
                   Icon(Icons.donut_large, color: Color(0xFF6A7554), size: 24),
                   SizedBox(width: 8),
                   Text(
-                    'Progress by Topic',
+                    'Progress by Courses',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -331,321 +463,431 @@ class ProgressPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildProgressItem(
-                icon: Icons.attach_money,
-                color: const Color(0xFFD4F8E8),
-                iconColor: const Color(0xFF2ECC71),
-                title: 'Credit',
-                percentage: 0.85,
-                progressColor: const Color(0xFFE09F3E),
-              ),
-              _buildProgressItem(
-                icon: Icons.business_center_outlined,
-                color: const Color(0xFFE3F2FD),
-                iconColor: const Color(0xFF2196F3),
-                title: 'Business',
-                percentage: 0.65,
-                progressColor: const Color(0xFFE09F3E),
-              ),
-              _buildProgressItem(
-                icon: Icons.psychology_outlined,
-                color: const Color(0xFFF3E5F5),
-                iconColor: const Color(0xFF9C27B0),
-                title: 'Logic',
-                percentage: 0.40,
-                progressColor: const Color(0xFFE09F3E),
-              ),
-              _buildProgressItem(
-                icon: Icons.favorite_border,
-                color: const Color(0xFFFFEBEE),
-                iconColor: const Color(0xFFE91E63),
-                title: 'EQ',
-                percentage: 0.25,
-                progressColor: const Color(0xFFE09F3E),
-                bottomPadding: 0,
-              ),
+              ...data.courses.map((course) {
+                final index = data.courses.indexOf(course);
+                final isLast = index == data.courses.length - 1;
+                return _buildProgressItem(
+                  icon: Icons.book_outlined,
+                  color: Colors.grey.shade100,
+                  iconColor: const Color(0xFF6A7554),
+                  title: course.title,
+                  percentage: course.completionPercentage / 100,
+                  progressColor: const Color(0xFFE09F3E),
+                  bottomPadding: isLast ? 0.0 : 20.0,
+                );
+              }).toList(),
             ],
           ),
         ),
         const SizedBox(height: 32),
-        // 30-Day Streak Calendar
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    color: Color(0xFF576045),
-                    size: 20,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    '30-Day Streak Calendar',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Calendar Grid (7 columns)
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+        // Activity Calendar
+        Obx(() {
+          if (controller.isCalendarLoading.value) {
+            return _buildShimmerCalendar();
+          }
+
+          final month = controller.calendarMonth.value;
+          final year = controller.calendarYear.value;
+          final totalDays = DateTime(year, month + 1, 0).day;
+          final activeDays = controller.activeDaysList;
+
+          final monthName = [
+            '',
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ][month];
+
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                itemCount: 30,
-                itemBuilder: (context, index) {
-                  final day = index + 1;
-                  // Make days 5-11 active (green) as per image active state
-                  final isActive = day >= 5 && day <= 11;
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? const Color(0xFF6A7554)
-                          : const Color(0xFFF5F5F5),
-                      shape: BoxShape.circle,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      color: Color(0xFF576045),
+                      size: 20,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '$day',
-                      style: TextStyle(
-                        color: isActive ? Colors.white : Colors.grey.shade400,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$monthName $year Streak Calendar',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C3E50),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Calendar Grid (7 columns)
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: totalDays,
+                  itemBuilder: (context, index) {
+                    final day = index + 1;
+                    final isActive = activeDays.contains(day);
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? const Color(0xFF6A7554)
+                            : const Color(0xFFF5F5F5),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$day',
+                        style: TextStyle(
+                          color: isActive ? Colors.white : Colors.grey.shade400,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        }),
 
         const SizedBox(height: 32),
-
         // Recent Quiz Results
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        Obx(() => _buildQuizAttemptsSection(controller)),
+      ],
+    );
+  }
+
+  Widget _buildQuizAttemptsSection(ProgressController controller) {
+    if (controller.isQuizLoading.value) {
+      return _buildShimmerQuizAttempts();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Recent Quiz Results',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Recent Quiz Results',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(color: Color(0xFFEEEEEE)),
+          if (controller.quizAttemptsList.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  'No quiz attempts yet',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Divider(color: Color(0xFFEEEEEE)),
-              _buildQuizResultItem(
-                title: 'Credit Basics Quiz',
-                subtitle: 'Credit Mastery • 2024-02-03',
-                score: '90%',
-              ),
-              const Divider(color: Color(0xFFEEEEEE), height: 1),
-              _buildQuizResultItem(
-                title: 'Business Planning Quiz',
-                subtitle: 'Business 101 • 2024-02-01',
-                score: '85%',
-                scoreColor: Colors.blue,
-              ),
-              const Divider(color: Color(0xFFEEEEEE), height: 1),
-              _buildQuizResultItem(
-                title: 'Decision Making Quiz',
-                subtitle: 'Smart Decisions • 2024-01-30',
-                score: '100%',
-                scoreColor: const Color(0xFF00C853),
-                isLast: true,
-              ),
-            ],
-          ),
+            )
+          else
+            ...controller.quizAttemptsList.asMap().entries.map((
+              MapEntry<int, QuizAttemptModel> entry,
+            ) {
+              final int index = entry.key;
+              final QuizAttemptModel attempt = entry.value;
+              final bool isLast =
+                  index == controller.quizAttemptsList.length - 1;
+
+              return Column(
+                children: [
+                  _buildQuizResultItem(
+                    title: attempt.quizTitle,
+                    subtitle:
+                        '${attempt.courseName} • ${DateFormat('dd Mar yyyy').format(attempt.completedAt)}',
+                    score: '${attempt.percentage}%',
+                    passed: attempt.passed,
+                    isLast: isLast,
+                  ),
+                  if (!isLast)
+                    const Divider(color: Color(0xFFEEEEEE), height: 1),
+                ],
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerQuizAttempts() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.grey.shade200),
         ),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(width: 150, height: 20, color: Colors.white),
+            const SizedBox(height: 16),
+            ...List.generate(
+              3,
+              (index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 100,
+                            height: 10,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(width: 40, height: 14, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildAchievementsTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Total Points Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFD88B2F), Color(0xFFC17A26)],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFC17A26).withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+    final controller = Get.find<ProgressController>();
+
+    return Obx(() {
+      if (controller.isBadgesLoading.value) {
+        return _buildBadgeShimmer();
+      }
+
+      final badgeData = controller.badgeData.value;
+      if (badgeData == null || badgeData.badges.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 60),
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Icon(
+                Icons.emoji_events_outlined,
+                color: Colors.grey.shade300,
+                size: 64,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No achievements available yet',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
               ),
             ],
           ),
-          child: const Column(
-            children: [
-              Icon(Icons.emoji_events_outlined, color: Colors.white, size: 48),
-              SizedBox(height: 12),
-              Text(
-                'Total Points',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Total Points Card / Header Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFD88B2F), Color(0xFFC17A26)],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFC17A26).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-              ),
-              Text(
-                '100',
-                style: TextStyle(
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.emoji_events_outlined,
                   color: Colors.white,
-                  fontSize: 56,
-                  fontWeight: FontWeight.bold,
-                  height: 1.0,
+                  size: 48,
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                '3 of 8 badges unlocked',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
+                const SizedBox(height: 12),
+                const Text(
+                  'Your Achievements',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Earned: ${badgeData.earnedBadges} / ${badgeData.totalBadges} Badges',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Badges Grid
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.75,
+            ),
+            itemCount: badgeData.badges.length,
+            itemBuilder: (context, index) {
+              return _buildBadgeCard(badgeData.badges[index]);
+            },
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildBadgeShimmer() {
+    return Column(
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            height: 180,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // Badges Grid
-        GridView.count(
+        GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.6, // Adjust based on content height
-          clipBehavior: Clip.none,
-          children: [
-            _buildBadgeCard(
-              icon: Icons.auto_fix_high, // Wizard-like
-              iconColor: Colors.purple,
-              iconBgColor: Colors.purple.shade50,
-              title: 'Credit\nWizard',
-              description: 'Completed Credit Mastery course',
-              rarity: 'common',
-              date: 'Unlocked\n2024-01-15',
-              isUnlocked: true,
-            ),
-            _buildBadgeCard(
-              icon: Icons.local_fire_department, // Flame
-              iconColor: Colors.orange,
-              iconBgColor: Colors.orange.shade50,
-              title: 'Week\nWarrior',
-              description: 'Maintained a 7-day streak',
-              rarity: 'rare',
-              date: 'Unlocked\n2024-02-01',
-              isUnlocked: true,
-            ),
-            _buildBadgeCard(
-              icon: Icons.track_changes, // Target
-              iconColor: Colors.red,
-              iconBgColor: Colors.red.shade50,
-              title: 'Quiz\nMaster',
-              description: 'Scored 100% on 3 quizzes',
-              rarity: 'rare',
-              date: 'Unlocked\n2024-01-28',
-              isUnlocked: true,
-            ),
-            _buildBadgeCard(
-              icon: Icons.lock,
-              iconColor: Colors.grey,
-              iconBgColor: Colors.grey.shade100,
-              title: 'Early\nBird',
-              description: 'Complete 5 lessons before 9 AM',
-              rarity: 'uncommon',
-              date: 'Locked',
-              isUnlocked: false,
-            ),
-          ],
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: 4,
+          itemBuilder: (context, index) {
+            return Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildBadgeCard({
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    required String title,
-    required String description,
-    required String rarity,
-    required String date,
-    required bool isUnlocked,
-  }) {
-    Color rarityBgColor;
-    Color rarityTextColor;
+  Widget _buildBadgeCard(BadgeModel badge) {
+    IconData iconData = _getIconData(badge.iconName);
+    bool isEarned = badge.earned;
 
-    switch (rarity.toLowerCase()) {
-      case 'rare':
-        rarityBgColor = const Color(0xFFE3F2FD); // Light Blue
-        rarityTextColor = const Color(0xFF2196F3);
-        break;
-      case 'uncommon':
-        rarityBgColor = const Color(0xFFE8F5E9); // Light Green
-        rarityTextColor = const Color(0xFF4CAF50);
-        break;
-      default:
-        rarityBgColor = const Color(0xFFF5F5F5); // Light Grey
-        rarityTextColor = Colors.grey.shade700;
+    String formattedDate = '';
+    if (isEarned && badge.earnedAt.isNotEmpty) {
+      try {
+        final date = DateTime.parse(badge.earnedAt);
+        formattedDate = DateFormat('dd MMM yyyy').format(date);
+      } catch (e) {
+        formattedDate = badge.earnedAt;
+      }
     }
 
     return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isEarned
+              ? const Color(0xFF6A7554).withOpacity(0.1)
+              : Colors.grey.shade100,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.05),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 4),
@@ -653,133 +895,149 @@ class ProgressPage extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+          // Icon with dynamic styling
+          Opacity(
+            opacity: isEarned ? 1.0 : 0.4,
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: isEarned
+                    ? const Color(0xFF6A7554).withOpacity(0.1)
+                    : Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  // Icon
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: isUnlocked ? iconBgColor : Colors.grey.shade100,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: isUnlocked ? iconColor : Colors.grey.shade400,
-                      size: 32,
-                    ),
+                  Icon(
+                    iconData,
+                    color: isEarned ? const Color(0xFF6A7554) : Colors.grey,
+                    size: 32,
                   ),
-                  const SizedBox(height: 10),
-                  // Title
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isUnlocked ? const Color(0xFF2C3E50) : Colors.grey,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Description
-                  Text(
-                    description,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                  // Rarity Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: rarityBgColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      rarity,
-                      style: TextStyle(
-                        color: rarityTextColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                  if (!isEarned)
+                    const Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.white,
+                        child: Icon(Icons.lock, size: 12, color: Colors.grey),
                       ),
                     ),
-                  ),
-                  if (isUnlocked) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      date,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
           ),
-          // Share Button or Locked
-          if (isUnlocked)
+          const SizedBox(height: 12),
+          // Name
+          Text(
+            badge.name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isEarned ? const Color(0xFF2C3E50) : Colors.grey,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          // Description
+          Text(
+            badge.description,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: isEarned ? Colors.grey.shade600 : Colors.grey.shade400,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12),
+          // const Spacer(),
+          // Status / Date
+          if (isEarned)
             Container(
-              width: double.infinity,
-              height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE09F3E), // Gold
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6A7554).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.share, color: Colors.white, size: 16),
-                  SizedBox(width: 8),
+                  const Icon(
+                    Icons.check_circle,
+                    size: 10,
+                    color: Color(0xFF6A7554),
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    'Share',
-                    style: TextStyle(
-                      color: Colors.white,
+                    formattedDate,
+                    style: const TextStyle(
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      color: Color(0xFF6A7554),
                     ),
                   ),
                 ],
               ),
             )
           else
-            const SizedBox(height: 16), // Padding for locked bottom
+            Text(
+              'Locked',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade400,
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'cup':
+      case 'medal':
+      case 'trophy':
+        return Icons.emoji_events;
+      case 'fire':
+      case 'streak':
+        return Icons.local_fire_department;
+      case 'star':
+        return Icons.star;
+      case 'wizard':
+      case 'magic':
+        return Icons.auto_fix_high;
+      case 'book':
+      case 'lesson':
+        return Icons.menu_book;
+      case 'quiz':
+      case 'test':
+        return Icons.quiz;
+      case 'target':
+      case 'goal':
+        return Icons.track_changes;
+      default:
+        return Icons.workspace_premium;
+    }
   }
 
   Widget _buildQuizResultItem({
     required String title,
     required String subtitle,
     required String score,
-    Color scoreColor = const Color(0xFF00C853), // Standard green
+    bool passed = true,
     bool isLast = false,
   }) {
     return Padding(
-      padding: EdgeInsets.only(top: 16, bottom: isLast ? 0 : 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Column(
@@ -788,26 +1046,43 @@ class ProgressPage extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2C3E50),
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
           ),
-          Text(
-            score,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: scoreColor,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'Score: $score',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(
+                    passed ? '✅ Passed' : '❌ Failed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: passed ? Colors.green : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -867,6 +1142,70 @@ class ProgressPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerSummaryCards() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Row(
+        children: List.generate(
+          3,
+          (index) => Expanded(
+            child: Container(
+              height: 100,
+              margin: EdgeInsets.only(right: index == 2 ? 0 : 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerProgressTab() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Column(
+        children: [
+          Container(
+            height: 300,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          const SizedBox(height: 32),
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerCalendar() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
       ),
     );
   }

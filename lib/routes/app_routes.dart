@@ -10,10 +10,13 @@ abstract class AppRoutes {
   static const String home = '/home';
   static const String notifications = '/home/notifications';
   static const String courseDetails = '/courses/details';
+  static const String studentCourseDetails = '/courses/:slug/student-detail';
+  static const String lessonContent = '/courses/:courseId/lessons/:lessonId';
   static const String courseVideo = '/courses/video';
   static const String resourceDetails = '/courses/resource-details';
   static const String lessonCompletion = '/courses/lesson-completion';
-  static const String quiz = '/courses/quiz';
+  static const String quiz = '/courses/quiz/:id';
+  static const String quizResult = '/courses/quiz-result';
   static const String courseComplete = '/courses/complete';
   static const String postDetails = '/community/post-details/:id';
   static const String createPost = '/community/create-post';
