@@ -135,41 +135,44 @@ class CoursesPage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Course List
             Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return _buildShimmerList();
-                }
+              child: RefreshIndicator(
+                onRefresh: () => controller.fetchCourses(showLoading: false),
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return _buildShimmerList();
+                  }
 
-                if (controller.courseList.isEmpty) {
-                  return _buildEmptyState();
-                }
+                  if (controller.courseList.isEmpty) {
+                    return _buildEmptyState();
+                  }
 
-                return ListView.separated(
-                  controller: controller.scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  itemCount:
-                      controller.courseList.length +
-                      (controller.isMoreLoading.value ? 1 : 0),
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 20),
-                  itemBuilder: (context, index) {
-                    if (index < controller.courseList.length) {
-                      final course = controller.courseList[index];
-                      return _buildCourseCard(context, controller, course);
-                    } else {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Loader(size: 30),
-                      );
-                    }
-                  },
-                );
-              }),
+                  return ListView.separated(
+                    controller: controller.scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    itemCount:
+                        controller.courseList.length +
+                        (controller.isMoreLoading.value ? 1 : 0),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 20),
+                    itemBuilder: (context, index) {
+                      if (index < controller.courseList.length) {
+                        final course = controller.courseList[index];
+                        return _buildCourseCard(context, controller, course);
+                      } else {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Loader(size: 30),
+                        );
+                      }
+                    },
+                  );
+                }),
+              ),
             ),
           ],
         ),
@@ -179,6 +182,7 @@ class CoursesPage extends StatelessWidget {
 
   Widget _buildShimmerList() {
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 5,
       separatorBuilder: (context, index) => const SizedBox(height: 20),
@@ -220,26 +224,31 @@ class CoursesPage extends StatelessWidget {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
-          Text(
-            'No courses found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        height: 400, // Sufficient height for pull-to-refresh
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 80, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'No courses found',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade600,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try adjusting your search or filters',
-            style: TextStyle(color: Colors.grey.shade400),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your search or filters',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,7 +5,8 @@ import '../../../core/widgets/custom_textfield.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 
 class SignupPage extends StatelessWidget {
-  const SignupPage({super.key});
+  final formKey = GlobalKey<FormState>();
+  SignupPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class SignupPage extends StatelessWidget {
               ],
             ),
             child: Form(
-              key: controller.formKey,
+              key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -50,13 +51,18 @@ class SignupPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.spa, // Placeholder for Rise & Impact logo
-                        size: 40,
-                        color: Color(0xFFD88B2F),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        'assets/images/riselogo.png',
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.school,
+                          size: 40,
+                          color: Color(0xFFD88B2F),
+                        ),
                       ),
                     ),
                   ),
@@ -205,7 +211,7 @@ class SignupPage extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: controller.isLoading.value
                             ? null
-                            : controller.signup,
+                            : () => controller.signup(formKey),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD88B2F), // Mustard
                           foregroundColor: Colors.white,

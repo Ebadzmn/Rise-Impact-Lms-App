@@ -9,6 +9,8 @@ import '../../core/network/api_client.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../core/network/api_interceptor.dart';
 import '../../core/services/storage_service.dart';
+import '../../routes/app_router.dart';
+import '../../routes/app_routes.dart';
 
 class ProfileController extends GetxController {
   final RxBool isLoading = true.obs;
@@ -265,6 +267,37 @@ class ProfileController extends GetxController {
       );
     } finally {
       isChangingPassword.value = false;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      // 1. Optional: Call logout API (even if it fails, we clear local state)
+      try {
+        await ApiClient.instance.post(ApiEndpoints.logout);
+      } catch (e) {
+        debugPrint('Logout API Error (ignoring): $e');
+      }
+
+      // 2. Clear Local Storage
+      final storage = Get.find<StorageService>();
+      storage.removeTokens();
+      storage.removeUser();
+
+      // 3. Navigate to Login/Welcome
+      // We use go() to clear the navigation stack
+      AppRouter.router.go(AppRoutes.login);
+      
+      Get.snackbar(
+        'Success',
+        'Logged out successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF576045),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      debugPrint('Logout Error: $e');
+      Get.snackbar('Error', 'Failed to logout properly');
     }
   }
 }

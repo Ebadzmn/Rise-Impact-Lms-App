@@ -11,7 +11,6 @@ import '../../../core/services/storage_service.dart';
 import '../../profile/profile_controller.dart';
 
 class LoginController extends GetxController {
-  final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -42,7 +41,7 @@ class LoginController extends GetxController {
     return null;
   }
 
-  Future<void> login() async {
+  Future<void> login(GlobalKey<FormState> formKey) async {
     if (formKey.currentState?.validate() ?? false) {
       try {
         isLoading.value = true;

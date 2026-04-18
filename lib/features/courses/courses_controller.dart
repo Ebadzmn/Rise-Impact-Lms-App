@@ -59,14 +59,15 @@ class CoursesController extends GetxController {
     }
   }
 
-  Future<void> fetchCourses({bool isLoadMore = false}) async {
+  Future<void> fetchCourses({bool isLoadMore = false, bool showLoading = true}) async {
     if (isLoadMore) {
       isMoreLoading.value = true;
       _currentPage++;
     } else {
-      isLoading.value = true;
+      if (showLoading) isLoading.value = true;
       _currentPage = 1;
-      courseList.clear();
+      // Don't clear if we are refreshing quietly
+      if (showLoading) courseList.clear();
     }
 
     try {
@@ -91,10 +92,12 @@ class CoursesController extends GetxController {
       
       _totalPages = courseResponse.pagination.totalPage;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load courses: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM);
+      if (showLoading) {
+        Get.snackbar('Error', 'Failed to load courses: ${e.toString()}',
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } finally {
-      isLoading.value = false;
+      if (showLoading) isLoading.value = false;
       isMoreLoading.value = false;
     }
   }

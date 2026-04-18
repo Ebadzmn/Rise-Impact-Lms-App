@@ -352,25 +352,30 @@ class ProfilePage extends GetView<ProfileController> {
               ],
             ),
             const SizedBox(height: 20),
-            if (badgeRes.badges.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    'No badges earned yet',
-                    style: TextStyle(color: Colors.grey),
+            Builder(
+              builder: (context) {
+                final earnedBadges = badgeRes.badges.where((b) => b.earned).toList();
+                if (earnedBadges.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        'No badges earned yet',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  );
+                }
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: earnedBadges
+                        .map((b) => _buildBadgeItem(b))
+                        .toList(),
                   ),
-                ),
-              )
-            else
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: badgeRes.badges
-                      .map((b) => _buildBadgeItem(b))
-                      .toList(),
-                ),
-              ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -575,7 +580,27 @@ class ProfilePage extends GetView<ProfileController> {
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () => controller.onInit(), // Placeholder retry logic
+          onPressed: () {
+            Get.dialog(
+              AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                      controller.logout();
+                    },
+                    child: const Text('Logout', style: TextStyle(color: Color(0xFFFF5252))),
+                  ),
+                ],
+              ),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFF5252),
             foregroundColor: Colors.white,

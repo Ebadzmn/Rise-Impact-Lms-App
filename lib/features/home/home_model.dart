@@ -76,11 +76,13 @@ class EnrolledCourse {
   final String title;
   final String thumbnail;
   final double completionPercentage;
+  final String slug;
 
   EnrolledCourse({
     required this.title,
     required this.thumbnail,
     required this.completionPercentage,
+    required this.slug,
   });
 
   factory EnrolledCourse.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,7 @@ class EnrolledCourse {
       title: json['title']?.toString() ?? 'Unknown Course',
       thumbnail: json['thumbnail']?.toString() ?? '',
       completionPercentage: double.tryParse(json['completionPercentage']?.toString() ?? '0') ?? 0.0,
+      slug: json['slug']?.toString() ?? '',
     );
   }
 }

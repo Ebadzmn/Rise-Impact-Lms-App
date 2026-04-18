@@ -3,9 +3,12 @@ import 'package:get/get.dart';
 import 'login_controller.dart';
 import '../../../core/widgets/custom_textfield.dart';
 import '../../../core/widgets/custom_app_bar.dart';
+import '../../../routes/app_router.dart';
+import '../../../routes/app_routes.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  final formKey = GlobalKey<FormState>();
+  LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +34,7 @@ class LoginPage extends StatelessWidget {
               ],
             ),
             child: Form(
-              key: controller.formKey,
+              key: formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +121,7 @@ class LoginPage extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: controller.isLoading.value
                             ? null
-                            : controller.login,
+                            : () => controller.login(formKey),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD88B2F), // Mustard
                           foregroundColor: Colors.white,
@@ -150,11 +153,34 @@ class LoginPage extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
+                  // Sign Up CTA
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Don\'t have an account? ',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      GestureDetector(
+                        onTap: () => AppRouter.router.push(AppRoutes.signup),
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: Color(0xFF576045),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
                   // Forgot Password
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        // TODO: Navigate to forgot password
+                        AppRouter.router.push(AppRoutes.forgotPassword);
                       },
                       child: const Text(
                         'Forgot Password?',

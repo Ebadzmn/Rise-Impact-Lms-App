@@ -54,4 +54,8 @@ class HomeController extends GetxController {
   void logout() {
     Get.offAllNamed(AppRoutes.login);
   }
+
+  Future<void> refreshData() async {
+    await _loadData();
+  }
 }

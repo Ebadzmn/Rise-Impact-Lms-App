@@ -7,7 +7,6 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 
 class SignupController extends GetxController {
-  final formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -103,7 +102,7 @@ class SignupController extends GetxController {
 
 
 
-  Future<void> signup() async {
+  Future<void> signup(GlobalKey<FormState> formKey) async {
     if (formKey.currentState?.validate() ?? false) {
 
       try {

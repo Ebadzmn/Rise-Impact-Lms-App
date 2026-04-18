@@ -1,6 +1,6 @@
 {
-    "name": "lms_riseandimpact",
-    "short_name": "lms_riseandimpact",
+    "name": "Rise and Impact Academy",
+    "short_name": "Rise and Impact Academy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

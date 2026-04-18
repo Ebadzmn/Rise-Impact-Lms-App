@@ -12,6 +12,9 @@ import '../features/welcome/welcome_binding.dart';
 import '../features/auth/login/login_page.dart';
 import '../features/auth/signup/signup_page.dart';
 import '../features/auth/otp/otp_page.dart';
+import '../features/auth/forgot_password/forgot_password_page.dart';
+import '../features/auth/forgot_password/forgot_password_otp_page.dart';
+import '../features/auth/forgot_password/reset_password_page.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/notifications/notifications_page.dart';
 import '../features/courses/course_details_page.dart';
@@ -69,13 +72,13 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) {
-          return const LoginPage();
+          return LoginPage();
         },
       ),
       GoRoute(
         path: AppRoutes.signup,
         builder: (context, state) {
-          return const SignupPage();
+          return SignupPage();
         },
       ),
       GoRoute(
@@ -83,6 +86,24 @@ class AppRouter {
         builder: (context, state) {
           final email = state.uri.queryParameters['email'] ?? '';
           return OtpPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) {
+          return ForgotPasswordPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPasswordOtp,
+        builder: (context, state) {
+          return const ForgotPasswordOtpPage();
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        builder: (context, state) {
+          return ResetPasswordPage();
         },
       ),
       GoRoute(

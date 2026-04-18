@@ -1,4 +1,4 @@
-package com.example.lms_riseandimpact
+package com.riseandimpactlms.app
 
 import io.flutter.embedding.android.FlutterActivity
 

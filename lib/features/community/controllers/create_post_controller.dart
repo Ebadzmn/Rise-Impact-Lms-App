@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_interceptor.dart';
-import '../../../routes/app_routes.dart';
+import '../../../routes/app_router.dart';
 import '../models/course_option_model.dart';
 
 class CreatePostController extends GetxController {
@@ -98,7 +98,7 @@ class CreatePostController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.offAllNamed(AppRoutes.home); // Navigate to Home
+        AppRouter.router.go('/community');
         Get.snackbar('Success', 'Post created successfully',
           backgroundColor: const Color(0xFF576045), colorText: Colors.white);
       }

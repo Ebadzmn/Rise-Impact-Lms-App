@@ -33,55 +33,60 @@ class HomePage extends GetView<HomeController> {
             return const Center(child: Text('No Data'));
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context),
-                const SizedBox(height: 10),
-                const Text(
-                  'Rise & Impact',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF576045),
+          return RefreshIndicator(
+            onRefresh: controller.refreshData,
+            color: const Color(0xFF6A7554),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Rise & Impact',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF576045),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _buildWelcomeCard(homeData.userInfo, homeData.streak),
-                const SizedBox(height: 20),
-                _buildProgressSection(homeData.yourProgress),
-                const SizedBox(height: 20),
-                _buildEnrolledCoursesSection(homeData.enrolledCourses),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildActionCard(
-                        icon: Icons.menu_book_rounded,
-                        title: 'Browse Courses',
-                        subtitle: 'Explore all topics',
-                        color: const Color(0xFF6A7554),
-                        onTap: () => context.go('/courses'),
+                  const SizedBox(height: 20),
+                  _buildWelcomeCard(homeData.userInfo, homeData.streak),
+                  const SizedBox(height: 20),
+                  _buildProgressSection(homeData.yourProgress),
+                  const SizedBox(height: 20),
+                  _buildEnrolledCoursesSection(homeData.enrolledCourses),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildActionCard(
+                          icon: Icons.menu_book_rounded,
+                          title: 'Browse Courses',
+                          subtitle: 'Explore all topics',
+                          color: const Color(0xFF6A7554),
+                          onTap: () => context.go('/courses'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildActionCard(
-                        icon: Icons.trending_up_rounded,
-                        title: 'View Progress',
-                        subtitle: 'Track achievements',
-                        color: const Color(0xFFD88B2F),
-                        onTap: () => context.go('/progress'),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildActionCard(
+                          icon: Icons.trending_up_rounded,
+                          title: 'View Progress',
+                          subtitle: 'Track achievements',
+                          color: const Color(0xFFD88B2F),
+                          onTap: () => context.go('/progress'),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildRecentBadgesSection(homeData.recentBadges),
-                const SizedBox(height: 20),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _buildRecentBadgesSection(homeData.recentBadges),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           );
         }),
@@ -418,7 +423,7 @@ class HomePage extends GetView<HomeController> {
             itemCount: courses.length,
             separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
-              return _buildCourseCard(courses[index]);
+              return _buildCourseCard(context, courses[index]);
             },
           ),
         ),
@@ -426,78 +431,86 @@ class HomePage extends GetView<HomeController> {
     );
   }
 
-  Widget _buildCourseCard(EnrolledCourse course) {
+  Widget _buildCourseCard(BuildContext context, EnrolledCourse course) {
     double completion = course.completionPercentage;
     if (completion > 1.0) completion = completion / 100;
     completion = completion.clamp(0.0, 1.0);
 
-    return Container(
-      width: 260,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFD88B2F),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: course.thumbnail.isNotEmpty
-                    ? Image.network(
-                        course.thumbnail,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _fallbackCourseIcon(),
-                      )
-                    : _fallbackCourseIcon(),
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(
+          AppRoutes.studentCourseDetails,
+          pathParameters: {'slug': course.slug},
+        );
+      },
+      child: Container(
+        width: 260,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD88B2F),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: course.thumbnail.isNotEmpty
+                      ? Image.network(
+                          course.thumbnail,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _fallbackCourseIcon(),
+                        )
+                      : _fallbackCourseIcon(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    course.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  course.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: completion,
+                child: Container(
+                  decoration: BoxDecoration(
                     color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
-            ],
-          ),
-          const Spacer(),
-          Container(
-            height: 8,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(4),
             ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: completion,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            const SizedBox(height: 12),
+            Text(
+              'Progress: ${(completion * 100).toInt()}%',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Progress: ${(completion * 100).toInt()}%',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

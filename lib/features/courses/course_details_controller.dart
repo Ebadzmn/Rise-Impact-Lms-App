@@ -21,8 +21,8 @@ class CourseDetailsController extends GetxController {
     fetchCourseDetails();
   }
 
-  Future<void> fetchCourseDetails() async {
-    isLoading.value = true;
+  Future<void> fetchCourseDetails({bool showLoading = true}) async {
+    if (showLoading) isLoading.value = true;
     try {
       final endpoint = ApiEndpoints.studentCourseDetail.replaceFirst(':identifier', identifier);
       final response = await _api.get(endpoint);
@@ -31,10 +31,12 @@ class CourseDetailsController extends GetxController {
       courseDetail.value = detail;
       isEnrolled.value = detail.enrollment != null;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load course details: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM);
+      if (showLoading) {
+        Get.snackbar('Error', 'Failed to load course details: ${e.toString()}',
+            snackPosition: SnackPosition.BOTTOM);
+      }
     } finally {
-      isLoading.value = false;
+      if (showLoading) isLoading.value = false;
     }
   }
 
