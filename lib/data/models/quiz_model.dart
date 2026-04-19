@@ -27,8 +27,11 @@ class QuizOptionModel {
 
   factory QuizOptionModel.fromJson(Map<String, dynamic> json) {
     final label = json['label']?.toString() ?? json['text']?.toString() ?? json['option']?.toString() ?? json['value']?.toString() ?? '';
+    final optionId = json['optionId']?.toString() ?? json['optionID']?.toString() ?? '';
     return QuizOptionModel(
-      id: json['_id']?.toString() ?? json['id']?.toString() ?? json['uid']?.toString() ?? label,
+      id: optionId.isNotEmpty
+          ? optionId
+          : json['_id']?.toString() ?? json['id']?.toString() ?? json['uid']?.toString() ?? label,
       label: label,
     );
   }
@@ -57,6 +60,7 @@ class QuizAttemptModel {
 
 class QuizResultModel {
   final int score;
+  final int maxScore;
   final double percentage;
   final bool passed;
   final String? timeSpent;
@@ -65,6 +69,7 @@ class QuizResultModel {
 
   QuizResultModel({
     required this.score,
+    required this.maxScore,
     required this.percentage,
     required this.passed,
     this.timeSpent,
@@ -83,6 +88,7 @@ class QuizResultModel {
 
     return QuizResultModel(
       score: data['score'] is int ? data['score'] : int.tryParse(data['score']?.toString() ?? '0') ?? 0,
+      maxScore: data['maxScore'] is int ? data['maxScore'] : int.tryParse(data['maxScore']?.toString() ?? '0') ?? 0,
       percentage: (data['percentage'] is num) ? (data['percentage'] as num).toDouble() : 0.0,
       passed: data['passed'] == true,
       timeSpent: data['timeSpent']?.toString(),
@@ -94,27 +100,43 @@ class QuizResultModel {
 
 class QuestionReviewModel {
   final String questionTitle;
-  final String selectedOption;
-  final String correctOption;
+  final String selectedOptionId;
+  final String? correctOptionId;
   final bool isCorrect;
-  final String? feedback;
+  final double marksAwarded;
 
   QuestionReviewModel({
     required this.questionTitle,
-    required this.selectedOption,
-    required this.correctOption,
+    required this.selectedOptionId,
+    this.correctOptionId,
     required this.isCorrect,
-    this.feedback,
+    required this.marksAwarded,
   });
 
   factory QuestionReviewModel.fromJson(Map<String, dynamic> json) {
     final qData = json['question'] ?? {};
+
+    final selectedId =
+        json['selectedOptionId']?.toString() ??
+        json['selectedOption']?['optionId']?.toString() ??
+        json['selectedOption']?['id']?.toString() ??
+        json['selectedOption']?['_id']?.toString() ??
+        '-';
+
+    final correctId =
+        json['correctOptionId']?.toString() ??
+        json['correctOption']?['optionId']?.toString() ??
+        json['correctOption']?['id']?.toString() ??
+        json['correctOption']?['_id']?.toString();
+
+    final awarded = json['marksAwarded'];
+
     return QuestionReviewModel(
       questionTitle: qData['title']?.toString() ?? qData['text']?.toString() ?? qData['question']?.toString() ?? 'Question',
-      selectedOption: json['selectedOption']?['label']?.toString() ?? json['selectedOption']?['text']?.toString() ?? 'None',
-      correctOption: json['correctOption']?['label']?.toString() ?? json['correctOption']?['text']?.toString() ?? 'Correct Answer',
+      selectedOptionId: selectedId,
+      correctOptionId: correctId,
       isCorrect: json['isCorrect'] == true,
-      feedback: json['feedback']?.toString(),
+      marksAwarded: (awarded is num) ? awarded.toDouble() : double.tryParse(awarded?.toString() ?? '0') ?? 0,
     );
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,8 +16,14 @@ import 'lesson_controller.dart';
 class LessonPage extends StatelessWidget {
   final String courseId;
   final String lessonId;
+  final String? courseSlug;
 
-  const LessonPage({super.key, required this.courseId, required this.lessonId});
+  const LessonPage({
+    super.key,
+    required this.courseId,
+    required this.lessonId,
+    this.courseSlug,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -274,6 +278,11 @@ class LessonPage extends StatelessWidget {
                   context.pushNamed(
                     AppRoutes.quiz,
                     pathParameters: {'id': lesson.quiz!.quizId},
+                    queryParameters: {
+                      'courseId': courseId,
+                      'lessonId': lessonId,
+                      if (courseSlug != null && courseSlug!.isNotEmpty) 'slug': courseSlug!,
+                    },
                   );
                 }
               },

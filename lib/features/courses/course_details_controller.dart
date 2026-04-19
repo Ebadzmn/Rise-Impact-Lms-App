@@ -65,4 +65,31 @@ class CourseDetailsController extends GetxController {
           colorText: Colors.white);
     }
   }
+
+  void applyLessonCompletionLocally({
+    required String lessonId,
+    int? completionPercentage,
+  }) {
+    final current = courseDetail.value;
+    if (current == null) return;
+
+    final updatedLessons = List<String>.from(current.completedLessons);
+    if (!updatedLessons.contains(lessonId)) {
+      updatedLessons.add(lessonId);
+    }
+
+    final currentEnrollment = current.enrollment;
+    final updatedEnrollment = currentEnrollment == null
+        ? null
+        : currentEnrollment.copyWith(
+            completionPercentage:
+                completionPercentage ?? currentEnrollment.completionPercentage,
+          );
+
+    courseDetail.value = current.copyWith(
+      completedLessons: updatedLessons,
+      enrollment: updatedEnrollment,
+      lastAccessedLesson: lessonId,
+    );
+  }
 }

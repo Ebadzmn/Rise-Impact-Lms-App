@@ -46,6 +46,36 @@ class CourseDetailModel {
       lastAccessedLesson: data['lastAccessedLesson']?.toString(),
     );
   }
+
+  CourseDetailModel copyWith({
+    String? id,
+    String? title,
+    String? thumbnail,
+    String? description,
+    double? averageRating,
+    int? enrollmentCount,
+    String? totalDuration,
+    String? slug,
+    EnrollmentDetail? enrollment,
+    List<ModuleModel>? curriculum,
+    List<String>? completedLessons,
+    String? lastAccessedLesson,
+  }) {
+    return CourseDetailModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      thumbnail: thumbnail ?? this.thumbnail,
+      description: description ?? this.description,
+      averageRating: averageRating ?? this.averageRating,
+      enrollmentCount: enrollmentCount ?? this.enrollmentCount,
+      totalDuration: totalDuration ?? this.totalDuration,
+      slug: slug ?? this.slug,
+      enrollment: enrollment ?? this.enrollment,
+      curriculum: curriculum ?? this.curriculum,
+      completedLessons: completedLessons ?? this.completedLessons,
+      lastAccessedLesson: lastAccessedLesson ?? this.lastAccessedLesson,
+    );
+  }
 }
 
 class EnrollmentDetail {
@@ -61,6 +91,16 @@ class EnrollmentDetail {
     return EnrollmentDetail(
       status: json['status']?.toString() ?? 'NONE',
       completionPercentage: json['completionPercentage'] is int ? json['completionPercentage'] : int.tryParse(json['completionPercentage']?.toString() ?? '0') ?? 0,
+    );
+  }
+
+  EnrollmentDetail copyWith({
+    String? status,
+    int? completionPercentage,
+  }) {
+    return EnrollmentDetail(
+      status: status ?? this.status,
+      completionPercentage: completionPercentage ?? this.completionPercentage,
     );
   }
 }

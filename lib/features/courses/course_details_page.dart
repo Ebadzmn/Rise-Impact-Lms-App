@@ -421,6 +421,7 @@ class CourseDetailsPage extends StatelessWidget {
           return _buildLessonTile(
             context,
             courseId: controller.courseDetail.value?.id ?? '',
+            courseSlug: controller.identifier,
             lesson: lesson,
             isCompleted: isCompleted,
             isLastAccessed: isLastAccessed,
@@ -433,6 +434,7 @@ class CourseDetailsPage extends StatelessWidget {
   Widget _buildLessonTile(
     BuildContext context, {
     required String courseId,
+    required String courseSlug,
     required LessonModel lesson,
     bool isCompleted = false,
     bool isLastAccessed = false,
@@ -479,6 +481,7 @@ class CourseDetailsPage extends StatelessWidget {
             'courseId': courseId,
             'lessonId': lesson.id,
           },
+          queryParameters: {'slug': courseSlug},
         );
       },
       child: Container(

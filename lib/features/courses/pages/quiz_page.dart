@@ -7,8 +7,17 @@ import '../../../data/models/quiz_model.dart';
 
 class QuizPage extends StatelessWidget {
   final String quizId;
+  final String? courseId;
+  final String? lessonId;
+  final String? courseSlug;
 
-  const QuizPage({super.key, required this.quizId});
+  const QuizPage({
+    super.key,
+    required this.quizId,
+    this.courseId,
+    this.lessonId,
+    this.courseSlug,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +239,21 @@ class QuizPage extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: controller.isSubmitting.value 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Text('Submitting quiz...'),
+                    ],
+                  )
                 : Text(isLast ? 'Submit' : 'Next'),
             ),
           ),

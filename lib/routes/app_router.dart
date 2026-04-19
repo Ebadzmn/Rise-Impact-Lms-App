@@ -172,8 +172,13 @@ class AppRouter {
                     builder: (context, state) {
                       final courseId = state.pathParameters['courseId'] ?? '';
                       final lessonId = state.pathParameters['lessonId'] ?? '';
+                      final slug = state.uri.queryParameters['slug'];
                       LessonBinding(courseId: courseId, lessonId: lessonId).dependencies();
-                      return LessonPage(courseId: courseId, lessonId: lessonId);
+                      return LessonPage(
+                        courseId: courseId,
+                        lessonId: lessonId,
+                        courseSlug: slug,
+                      );
                     },
                   ),
                   GoRoute(
@@ -199,8 +204,21 @@ class AppRouter {
                     path: 'quiz/:id',
                     builder: (context, state) {
                       final id = state.pathParameters['id'] ?? '';
-                      QuizBinding(quizId: id).dependencies();
-                      return QuizPage(quizId: id);
+                      final courseId = state.uri.queryParameters['courseId'];
+                      final lessonId = state.uri.queryParameters['lessonId'];
+                      final courseSlug = state.uri.queryParameters['slug'];
+                      QuizBinding(
+                        quizId: id,
+                        courseId: courseId,
+                        lessonId: lessonId,
+                        courseSlug: courseSlug,
+                      ).dependencies();
+                      return QuizPage(
+                        quizId: id,
+                        courseId: courseId,
+                        lessonId: lessonId,
+                        courseSlug: courseSlug,
+                      );
                     },
                   ),
                   GoRoute(

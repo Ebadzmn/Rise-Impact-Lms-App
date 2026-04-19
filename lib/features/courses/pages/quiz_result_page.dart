@@ -46,7 +46,7 @@ class QuizResultPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          result.passed ? '🎉 Congratulations!' : '❌ Keep Learning!',
+          result.passed ? 'Pass ✅' : 'Fail ❌',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
@@ -70,7 +70,7 @@ class QuizResultPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildScoreItem('Score', '${result.score} pts'),
+          _buildScoreItem('Score', '${result.score}/${result.maxScore}'),
           _buildScoreItem('Percentage', '${result.percentage.toStringAsFixed(1)}%'),
           if (result.timeSpent != null) _buildScoreItem('Time spent', result.timeSpent!),
         ],
@@ -119,17 +119,14 @@ class QuizResultPage extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 16),
-          _buildReviewOption('Your Answer', review.selectedOption, review.isCorrect),
-          if (!review.isCorrect) ...[
+          _buildReviewOption('Selected Option ID', review.selectedOptionId, review.isCorrect),
+          const SizedBox(height: 8),
+          _buildReviewOption('Result', review.isCorrect ? 'Correct' : 'Wrong', review.isCorrect),
+          const SizedBox(height: 8),
+          _buildReviewOption('Marks Awarded', review.marksAwarded.toStringAsFixed(2), review.marksAwarded > 0),
+          if (review.correctOptionId != null && review.correctOptionId!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            _buildReviewOption('Correct Answer', review.correctOption, true),
-          ],
-          if (review.feedback != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              'Feedback: ${review.feedback}',
-              style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic),
-            ),
+            _buildReviewOption('Correct Option ID', review.correctOptionId!, true),
           ],
         ],
       ),
