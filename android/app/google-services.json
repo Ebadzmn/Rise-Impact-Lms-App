@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "14593683511",
+    "project_id": "rodneylms",
+    "storage_bucket": "rodneylms.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:14593683511:android:bcb3dc669b0d01af978fb2",
+        "android_client_info": {
+          "package_name": "com.riseandimpactlms.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5ssbv1RV4bsfatva_tOZ2Kw1KFDsEEkY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

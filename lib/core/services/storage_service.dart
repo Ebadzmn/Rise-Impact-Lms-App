@@ -8,6 +8,7 @@ class StorageService extends GetxService {
 
   static const String _tokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
+  static const String _deviceTokenKey = 'device_token';
   static const String _userKey = 'user_data';
   static const String _onboardingKey = 'is_first_time';
 
@@ -25,10 +26,14 @@ class StorageService extends GetxService {
   void saveToken(String token) => _prefs.setString(_tokenKey, token);
   String? getToken() => _prefs.getString(_tokenKey);
   String? getRefreshToken() => _prefs.getString(_refreshTokenKey);
-  
+  void saveDeviceToken(String token) =>
+      _prefs.setString(_deviceTokenKey, token);
+  String? getDeviceToken() => _prefs.getString(_deviceTokenKey);
+
   void removeTokens() {
     _prefs.remove(_tokenKey);
     _prefs.remove(_refreshTokenKey);
+    _prefs.remove(_deviceTokenKey);
   }
 
   // ── User data ──────────────────────────────────────────────────────────────

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lms_riseandimpact/routes/app_router.dart';
@@ -7,6 +6,7 @@ import '../../../routes/app_routes.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_interceptor.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../profile/profile_controller.dart';
 
@@ -46,11 +46,23 @@ class LoginController extends GetxController {
       try {
         isLoading.value = true;
 
+        final notificationService = Get.find<NotificationService>();
+        final deviceToken = await notificationService.ensureToken();
+
+        if (deviceToken == null || deviceToken.isEmpty) {
+          Get.snackbar(
+            'Notification setup incomplete',
+            'FCM token is unavailable. Enable notifications and try again.',
+          );
+          return;
+        }
+
         final response = await ApiClient.instance.post(
           ApiEndpoints.login,
           body: {
             "email": emailController.text.trim(),
             "password": passwordController.text,
+            "deviceToken": deviceToken,
           },
         );
 
@@ -70,18 +82,22 @@ class LoginController extends GetxController {
 
         final accessToken = payload['accessToken']?.toString();
         final refreshToken = payload['refreshToken']?.toString();
-        
-        if (accessToken != null && refreshToken != null && accessToken.isNotEmpty) {
+
+        if (accessToken != null &&
+            refreshToken != null &&
+            accessToken.isNotEmpty) {
           final storage = Get.find<StorageService>();
           storage.saveTokens(accessToken, refreshToken);
-          
+
           // Fetch profile to check onboarding status
           try {
             final profileController = Get.put(ProfileController());
             await profileController.fetchData();
-            
-            final onboardingCompleted = profileController.profileData.value?.onboardingCompleted ?? true;
-            
+
+            final onboardingCompleted =
+                profileController.profileData.value?.onboardingCompleted ??
+                true;
+
             if (onboardingCompleted) {
               AppRouter.router.go(AppRoutes.home);
             } else {
@@ -93,13 +109,17 @@ class LoginController extends GetxController {
             AppRouter.router.go(AppRoutes.home);
           }
         } else {
-          debugPrint('Login Token Error: Expected tokens not found in payload: $payload');
+          debugPrint(
+            'Login Token Error: Expected tokens not found in payload: $payload',
+          );
           Get.snackbar('Error', 'Invalid response from server');
         }
-
       } catch (e, stack) {
         debugPrint('Login Exception: $e\n$stack');
-        Get.snackbar('Error', e is NetworkException ? e.message : 'Login failed. Please try again.');
+        Get.snackbar(
+          'Error',
+          e is NetworkException ? e.message : 'Login failed. Please try again.',
+        );
       } finally {
         isLoading.value = false;
       }
