@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/notification_badge_icon.dart';
 import '../../core/widgets/loader.dart';
 import '../../routes/app_routes.dart';
 import '../../data/models/course_model.dart';
@@ -23,40 +24,12 @@ class CoursesPage extends StatelessWidget {
           showBackButton: true,
           onBackCallback: () => context.go(AppRoutes.home),
           actions: [
-            Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.black54,
-                  ),
-                  onPressed: () => context.push(AppRoutes.notifications),
-                ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
+            NotificationBadgeIcon(
+              onTap: () => context.push(AppRoutes.notifications),
+              iconColor: Colors.black54,
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.all(8),
+              useCircularBackground: false,
             ),
             const SizedBox(width: 8),
           ],

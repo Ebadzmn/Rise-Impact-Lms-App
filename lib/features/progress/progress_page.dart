@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/notification_badge_icon.dart';
 import '../../routes/app_routes.dart';
 import 'progress_controller.dart';
 
@@ -26,36 +27,12 @@ class ProgressPage extends StatelessWidget {
           showBackButton: true,
           onBackCallback: () => context.go(AppRoutes.home),
           actions: [
-            Stack(
-              alignment: Alignment.topRight,
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    color: Color(0xFF2C3E50),
-                  ),
-                  onPressed: () {},
-                ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            NotificationBadgeIcon(
+              onTap: () => context.push(AppRoutes.notifications),
+              iconColor: const Color(0xFF2C3E50),
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.all(8),
+              useCircularBackground: false,
             ),
             const SizedBox(width: 8),
           ],
@@ -239,7 +216,11 @@ class ProgressPage extends StatelessWidget {
               children: [
                 const Text(
                   'Overall Progress',
-                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -279,7 +260,11 @@ class ProgressPage extends StatelessWidget {
               children: [
                 const Text(
                   'Points Earned',
-                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -323,10 +308,7 @@ class ProgressPage extends StatelessWidget {
               color: const Color(0xFFFFF3E0),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              '🔥',
-              style: TextStyle(fontSize: 32),
-            ),
+            child: const Text('🔥', style: TextStyle(fontSize: 32)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -369,11 +351,7 @@ class ProgressPage extends StatelessWidget {
             ),
           ),
           // Divider
-          Container(
-            height: 40,
-            width: 1,
-            color: Colors.grey.withOpacity(0.2),
-          ),
+          Container(height: 40, width: 1, color: Colors.grey.withOpacity(0.2)),
           const SizedBox(width: 16),
           // Longest Streak Section
           Column(

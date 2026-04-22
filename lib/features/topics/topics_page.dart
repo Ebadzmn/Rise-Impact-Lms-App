@@ -20,15 +20,17 @@ class TopicsPage extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
               // Header
-              Obx(() => Text(
-                'Hello, ${controller.userName.value} 👋',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Obx(
+                () => Text(
+                  'Hello, ${controller.userName.value} 👋',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              )),
+              ),
               const SizedBox(height: 20),
               const Text(
                 'What would you like to enroll in?',
@@ -47,6 +49,30 @@ class TopicsPage extends StatelessWidget {
               ),
 
               const SizedBox(height: 40),
+
+              Obx(() {
+                if (controller.hasPendingOnboardingCompletion.value &&
+                    !controller.isSubmitting.value) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.24),
+                      ),
+                    ),
+                    child: const Text(
+                      'Your course selection is saved. Complete onboarding to continue.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
+              }),
 
               // Grid
               Obx(() {
@@ -84,9 +110,16 @@ class TopicsPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final course = controller.courses[index];
                     return Obx(() {
-                      final isSelected = controller.selectedCourseIds.contains(course.id);
+                      final isSelected = controller.selectedCourseIds.contains(
+                        course.id,
+                      );
+                      final canToggle =
+                          !controller.hasPendingOnboardingCompletion.value &&
+                          !controller.isSubmitting.value;
                       return GestureDetector(
-                        onTap: () => controller.toggleCourse(course.id),
+                        onTap: canToggle
+                            ? () => controller.toggleCourse(course.id)
+                            : null,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.all(12),
@@ -104,7 +137,9 @@ class TopicsPage extends StatelessWidget {
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -122,14 +157,23 @@ class TopicsPage extends StatelessWidget {
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    child: course.thumbnail.isNotEmpty 
-                                      ? Image.network(
-                                          course.thumbnail,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(Icons.image_not_supported, color: Colors.white54, size: 32),
-                                        )
-                                      : const Icon(Icons.image, color: Colors.white54, size: 32),
+                                    child: course.thumbnail.isNotEmpty
+                                        ? Image.network(
+                                            course.thumbnail,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Icon(
+                                                      Icons.image_not_supported,
+                                                      color: Colors.white54,
+                                                      size: 32,
+                                                    ),
+                                          )
+                                        : const Icon(
+                                            Icons.image,
+                                            color: Colors.white54,
+                                            size: 32,
+                                          ),
                                   ),
                                 ),
                               ),
@@ -160,50 +204,61 @@ class TopicsPage extends StatelessWidget {
               const SizedBox(height: 20),
               Obx(
                 () => Text(
-                  '${controller.selectedCourseIds.length} course${controller.selectedCourseIds.length == 1 ? '' : 's'} selected',
+                  controller.hasPendingOnboardingCompletion.value
+                      ? 'Enrollment saved. Ready to complete onboarding.'
+                      : '${controller.selectedCourseIds.length} course${controller.selectedCourseIds.length == 1 ? '' : 's'} selected',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70),
                 ),
               ),
               const SizedBox(height: 20),
 
-              Obx(() => ElevatedButton(
-                onPressed: controller.isSubmitting.value ? null : controller.submitEnrollment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD88B2F),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              Obx(
+                () => ElevatedButton(
+                  onPressed:
+                      controller.isSubmitting.value ||
+                          (!controller.hasPendingOnboardingCompletion.value &&
+                              controller.selectedCourseIds.isEmpty)
+                      ? null
+                      : controller.submitEnrollment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD88B2F),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
                   ),
-                  elevation: 2,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (controller.isSubmitting.value)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (controller.isSubmitting.value)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          controller.hasPendingOnboardingCompletion.value
+                              ? 'Complete onboarding'
+                              : 'Enroll Now',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )
-                    else ...[
-                      const Text(
-                        'Enroll Now',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.check_circle_outline),
-                    ]
-                  ],
+                        const SizedBox(width: 8),
+                        const Icon(Icons.check_circle_outline),
+                      ],
+                    ],
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
         ),

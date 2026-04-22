@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/notification_badge_icon.dart';
 import '../../routes/app_routes.dart';
 import '../profile/profile_controller.dart';
 import 'controllers/community_controller.dart';
@@ -21,10 +22,7 @@ class CommunityPage extends StatelessWidget {
           title: 'Community',
           showBackButton: true,
           onBackCallback: () => context.go(AppRoutes.home),
-          actions: [
-            _buildNotificationIcon(),
-            const SizedBox(width: 8),
-          ],
+          actions: [_buildNotificationIcon(context), const SizedBox(width: 8)],
         ),
       ),
       body: Column(
@@ -54,7 +52,8 @@ class CommunityPage extends StatelessWidget {
                     controller: controller.scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    itemCount: controller.posts.length +
+                    itemCount:
+                        controller.posts.length +
                         (controller.isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == controller.posts.length) {
@@ -65,14 +64,21 @@ class CommunityPage extends StatelessWidget {
 
                       return PostCard(
                         post: post,
-                        onTap: () => context
-                            .push('/community/post-details/${post.id}'),
+                        onTap: () =>
+                            context.push('/community/post-details/${post.id}'),
                         onLikeToggle: () => controller.toggleLike(post.id),
-                        onEdit: isOwnPost ? () => context.push('/community/edit-post', extra: post) : null,
-                        onDelete: isOwnPost ? () => _showDeleteDialog(
-                          context,
-                          onConfirm: () => controller.deletePost(post.id),
-                        ) : null,
+                        onEdit: isOwnPost
+                            ? () => context.push(
+                                '/community/edit-post',
+                                extra: post,
+                              )
+                            : null,
+                        onDelete: isOwnPost
+                            ? () => _showDeleteDialog(
+                                context,
+                                onConfirm: () => controller.deletePost(post.id),
+                              )
+                            : null,
                       );
                     },
                   ),
@@ -85,16 +91,31 @@ class CommunityPage extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, {required VoidCallback onConfirm}) {
+  void _showDeleteDialog(
+    BuildContext context, {
+    required VoidCallback onConfirm,
+  }) {
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Delete Post', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
-        content: Text('Are you sure you want to delete this post?', style: TextStyle(color: Colors.grey.shade600)),
+        title: const Text(
+          'Delete Post',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete this post?',
+          style: TextStyle(color: Colors.grey.shade600),
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -104,9 +125,14 @@ class CommunityPage extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -140,11 +166,14 @@ class CommunityPage extends StatelessWidget {
                   children: [
                     Icon(Icons.add, color: Colors.white, size: 20),
                     SizedBox(width: 8),
-                    Text('Create a post',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold)),
+                    Text(
+                      'Create a post',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -162,11 +191,14 @@ class CommunityPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(
-                  child: Text('My post',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'My post',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -192,19 +224,19 @@ class CommunityPage extends StatelessWidget {
               final isSelected = isAll
                   ? controller.selectedCourseId == null
                   : controller.selectedCourseId ==
-                      controller.courseOptions[index - 1].id;
+                        controller.courseOptions[index - 1].id;
 
               return Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: FilterChip(
-                  label: Text(isAll
-                      ? 'All'
-                      : controller.courseOptions[index - 1].title),
+                  label: Text(
+                    isAll ? 'All' : controller.courseOptions[index - 1].title,
+                  ),
                   selected: isSelected,
                   onSelected: (val) {
                     controller.filterByCourse(
-                        isAll ? null : controller.courseOptions[index - 1].id);
+                      isAll ? null : controller.courseOptions[index - 1].id,
+                    );
                   },
                   selectedColor: const Color(0xFF869277),
                   disabledColor: Colors.white,
@@ -212,15 +244,17 @@ class CommunityPage extends StatelessWidget {
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey.shade700,
                     fontSize: 12,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                        color: isSelected
-                            ? Colors.transparent
-                            : Colors.grey.shade200),
+                      color: isSelected
+                          ? Colors.transparent
+                          : Colors.grey.shade200,
+                    ),
                   ),
                   showCheckmark: false,
                 ),
@@ -243,7 +277,9 @@ class CommunityPage extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16),
           height: 150,
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );
@@ -256,11 +292,14 @@ class CommunityPage extends StatelessWidget {
         children: [
           Icon(Icons.forum_outlined, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          Text('No posts available',
-              style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500)),
+          Text(
+            'No posts available',
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -274,35 +313,21 @@ class CommunityPage extends StatelessWidget {
           height: 20,
           width: 20,
           child: CircularProgressIndicator(
-              strokeWidth: 2, color: Color(0xFFE39D41)),
+            strokeWidth: 2,
+            color: Color(0xFFE39D41),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNotificationIcon() {
-    return Stack(
-      alignment: Alignment.topRight,
-      children: [
-        IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: Color(0xFF2C3E50)),
-            onPressed: () {}),
-        Positioned(
-          right: 8,
-          top: 8,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-                color: Colors.redAccent, shape: BoxShape.circle),
-            child: const Text('3',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold)),
-          ),
-        ),
-      ],
+  Widget _buildNotificationIcon(BuildContext context) {
+    return NotificationBadgeIcon(
+      onTap: () => context.push(AppRoutes.notifications),
+      iconColor: const Color(0xFF2C3E50),
+      backgroundColor: Colors.transparent,
+      padding: const EdgeInsets.all(8),
+      useCircularBackground: false,
     );
   }
 }

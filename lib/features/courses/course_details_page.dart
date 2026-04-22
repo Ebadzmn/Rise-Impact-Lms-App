@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/notification_badge_icon.dart';
 import '../../routes/app_routes.dart';
 import '../../data/models/course_details_model.dart';
 import 'course_details_controller.dart';
@@ -21,40 +22,12 @@ class CourseDetailsPage extends StatelessWidget {
           title: 'Course Details',
           showBackButton: true,
           actions: [
-            Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.black54,
-                  ),
-                  onPressed: () => context.push(AppRoutes.notifications),
-                ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: const Text(
-                      '3',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
+            NotificationBadgeIcon(
+              onTap: () => context.push(AppRoutes.notifications),
+              iconColor: Colors.black54,
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.all(8),
+              useCircularBackground: false,
             ),
             const SizedBox(width: 8),
           ],
@@ -144,12 +117,18 @@ class CourseDetailsPage extends StatelessWidget {
                               Text(
                                 'Status: ${enrollment.status.capitalizeFirst}',
                                 style: const TextStyle(
-                                    color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Text(
                                 'Progress: ${enrollment.completionPercentage}%',
                                 style: const TextStyle(
-                                    color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -308,7 +287,10 @@ class CourseDetailsPage extends StatelessWidget {
   }
 
   Widget _buildCurriculum(
-      BuildContext context, CourseDetailsController controller, CourseDetailModel course) {
+    BuildContext context,
+    CourseDetailsController controller,
+    CourseDetailModel course,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
@@ -361,7 +343,8 @@ class CourseDetailsPage extends StatelessWidget {
                   completedLessons: course.completedLessons,
                   lastAccessedId: course.lastAccessedLesson,
                 ),
-                if (index < course.curriculum.length - 1) const Divider(height: 1),
+                if (index < course.curriculum.length - 1)
+                  const Divider(height: 1),
               ],
             );
           }),
@@ -378,7 +361,9 @@ class CourseDetailsPage extends StatelessWidget {
     required List<String> completedLessons,
     String? lastAccessedId,
   }) {
-    final int completedCount = module.lessons.where((l) => completedLessons.contains(l.id)).length;
+    final int completedCount = module.lessons
+        .where((l) => completedLessons.contains(l.id))
+        .length;
 
     return Theme(
       data: ThemeData().copyWith(dividerColor: Colors.transparent),
@@ -477,10 +462,7 @@ class CourseDetailsPage extends StatelessWidget {
       onTap: () {
         context.pushNamed(
           AppRoutes.lessonContent,
-          pathParameters: {
-            'courseId': courseId,
-            'lessonId': lesson.id,
-          },
+          pathParameters: {'courseId': courseId, 'lessonId': lesson.id},
           queryParameters: {'slug': courseSlug},
         );
       },
@@ -491,7 +473,8 @@ class CourseDetailsPage extends StatelessWidget {
           color: bgColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-              color: isLastAccessed ? Colors.amber.shade200 : Colors.transparent),
+            color: isLastAccessed ? Colors.amber.shade200 : Colors.transparent,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.03),
@@ -528,10 +511,14 @@ class CourseDetailsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (lesson.type.toUpperCase() == 'VIDEO' && lesson.duration != null)
+                  if (lesson.type.toUpperCase() == 'VIDEO' &&
+                      lesson.duration != null)
                     Text(
                       lesson.duration!,
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                      ),
                     ),
                 ],
               ),
@@ -543,7 +530,10 @@ class CourseDetailsPage extends StatelessWidget {
                   color: Colors.amber,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('Resume', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Resume',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                ),
               ),
           ],
         ),

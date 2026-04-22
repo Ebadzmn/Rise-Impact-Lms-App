@@ -8,6 +8,7 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/api_interceptor.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
+import '../../notifications/notifications_controller.dart';
 import '../../profile/profile_controller.dart';
 
 class LoginController extends GetxController {
@@ -89,6 +90,10 @@ class LoginController extends GetxController {
           final storage = Get.find<StorageService>();
           storage.saveTokens(accessToken, refreshToken);
 
+          if (Get.isRegistered<NotificationsController>()) {
+            await Get.find<NotificationsController>().refreshNotifications();
+          }
+
           // Fetch profile to check onboarding status
           try {
             final profileController = Get.put(ProfileController());
@@ -96,7 +101,7 @@ class LoginController extends GetxController {
 
             final onboardingCompleted =
                 profileController.profileData.value?.onboardingCompleted ??
-                true;
+                false;
 
             if (onboardingCompleted) {
               AppRouter.router.go(AppRoutes.home);
@@ -105,8 +110,7 @@ class LoginController extends GetxController {
             }
           } catch (e) {
             debugPrint('Post-Login Profile Fetch Error: $e');
-            // Fallback to Home if profile check fails
-            AppRouter.router.go(AppRoutes.home);
+            AppRouter.router.go(AppRoutes.topics);
           }
         } else {
           debugPrint(

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../routes/app_routes.dart';
 import '../../core/widgets/circular_percent_indicator.dart';
+import '../../core/widgets/notification_badge_icon.dart';
 import 'home_controller.dart';
 import 'home_model.dart';
 
@@ -106,28 +107,86 @@ class HomePage extends GetView<HomeController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(width: 50, height: 50, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                Container(width: 40, height: 40, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 20),
             Container(width: 150, height: 24, color: Colors.white),
             const SizedBox(height: 20),
-            Container(width: double.infinity, height: 180, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            Container(
+              width: double.infinity,
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
             const SizedBox(height: 20),
-            Container(width: double.infinity, height: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            Container(
+              width: double.infinity,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
             const SizedBox(height: 20),
-            Container(width: double.infinity, height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(child: Container(height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+                Expanded(
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 16),
-                Expanded(child: Container(height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+                Expanded(
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 20),
-            Container(width: double.infinity, height: 150, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+            Container(
+              width: double.infinity,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
           ],
         ),
       ),
@@ -142,13 +201,17 @@ class HomePage extends GetView<HomeController> {
           const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
           const SizedBox(height: 16),
           Text(
-            controller.errorMessage.value.isNotEmpty ? controller.errorMessage.value : 'Failed to load home data',
+            controller.errorMessage.value.isNotEmpty
+                ? controller.errorMessage.value
+                : 'Failed to load home data',
             style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => controller.onInit(),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A7554)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6A7554),
+            ),
             child: const Text('Retry', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -173,51 +236,10 @@ class HomePage extends GetView<HomeController> {
           ),
           child: const Icon(Icons.school, color: Colors.orange),
         ),
-        Stack(
-          children: [
-            GestureDetector(
-              onTap: () {
-                context.push(AppRoutes.notifications);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: Colors.black54,
-                ),
-              ),
-            ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.redAccent,
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  '3',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        NotificationBadgeIcon(
+          onTap: () => context.push(AppRoutes.notifications),
+          iconColor: Colors.black54,
+          backgroundColor: Colors.white,
         ),
       ],
     );
@@ -351,12 +373,16 @@ class HomePage extends GetView<HomeController> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildProgressItem(
-                percent: progress.courseProgress > 1.0 ? progress.courseProgress / 100 : progress.courseProgress,
+                percent: progress.courseProgress > 1.0
+                    ? progress.courseProgress / 100
+                    : progress.courseProgress,
                 label: 'Course',
                 color: const Color(0xFF6A7554),
               ),
               _buildProgressItem(
-                percent: progress.quizProgress > 1.0 ? progress.quizProgress / 100 : progress.quizProgress,
+                percent: progress.quizProgress > 1.0
+                    ? progress.quizProgress / 100
+                    : progress.quizProgress,
                 label: 'Quiz',
                 color: const Color(0xFFD88B2F),
               ),
@@ -586,10 +612,14 @@ class HomePage extends GetView<HomeController> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: badges.map((b) => Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: _buildDynamicBadgeItem(b),
-                )).toList(),
+                children: badges
+                    .map(
+                      (b) => Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: _buildDynamicBadgeItem(b),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
         ],
@@ -641,10 +671,7 @@ class HomePage extends GetView<HomeController> {
           Text(
             formattedDate,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 10,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 10),
           ),
         ],
       ),

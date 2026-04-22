@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/widgets/custom_app_bar.dart';
+import '../../core/widgets/notification_badge_icon.dart';
+import '../../routes/app_routes.dart';
 import 'profile_controller.dart';
 import 'profile_model.dart';
 import 'widgets/change_password_dialog.dart';
@@ -21,7 +23,7 @@ class ProfilePage extends GetView<ProfileController> {
         child: CustomAppBar(
           title: 'Profile',
           showBackButton: false,
-          actions: [_buildNotificationIcon(), const SizedBox(width: 8)],
+          actions: [_buildNotificationIcon(context), const SizedBox(width: 8)],
         ),
       ),
       body: Obx(() {
@@ -62,37 +64,13 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildNotificationIcon() {
-    return Stack(
-      alignment: Alignment.topRight,
-      children: [
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_outlined,
-            color: Color(0xFF2C3E50),
-          ),
-          onPressed: () {},
-        ),
-        Positioned(
-          right: 8,
-          top: 8,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Colors.redAccent,
-              shape: BoxShape.circle,
-            ),
-            child: const Text(
-              '3',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
+  Widget _buildNotificationIcon(BuildContext context) {
+    return NotificationBadgeIcon(
+      onTap: () => context.push(AppRoutes.notifications),
+      iconColor: const Color(0xFF2C3E50),
+      backgroundColor: Colors.transparent,
+      padding: const EdgeInsets.all(8),
+      useCircularBackground: false,
     );
   }
 
@@ -354,7 +332,9 @@ class ProfilePage extends GetView<ProfileController> {
             const SizedBox(height: 20),
             Builder(
               builder: (context) {
-                final earnedBadges = badgeRes.badges.where((b) => b.earned).toList();
+                final earnedBadges = badgeRes.badges
+                    .where((b) => b.earned)
+                    .toList();
                 if (earnedBadges.isEmpty) {
                   return const Center(
                     child: Padding(
@@ -490,24 +470,33 @@ class ProfilePage extends GetView<ProfileController> {
               if (controller.legalState.value.isError) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Center(child: Text('Failed to load legal links', style: TextStyle(fontSize: 12, color: Colors.red))),
+                  child: Center(
+                    child: Text(
+                      'Failed to load legal links',
+                      style: TextStyle(fontSize: 12, color: Colors.red),
+                    ),
+                  ),
                 );
               }
 
               return Column(
-                children: controller.legalList.map((legal) => Column(
-                  children: [
-                     const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                     _buildSettingsItem(
-                      Icons.security_outlined,
-                      legal.title,
-                      isArrowVisible: true,
-                      onTap: () {
-                        context.push('/profile/legal/${legal.slug}');
-                      },
-                    ),
-                  ],
-                )).toList(),
+                children: controller.legalList
+                    .map(
+                      (legal) => Column(
+                        children: [
+                          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                          _buildSettingsItem(
+                            Icons.security_outlined,
+                            legal.title,
+                            isArrowVisible: true,
+                            onTap: () {
+                              context.push('/profile/legal/${legal.slug}');
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
               );
             }),
             const SizedBox(height: 8),
@@ -522,21 +511,27 @@ class ProfilePage extends GetView<ProfileController> {
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Column(
-        children: List.generate(2, (index) => Column(
-          children: [
-            const Divider(height: 1, color: Color(0xFFEEEEEE)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                children: [
-                  Container(width: 22, height: 22, color: Colors.white),
-                  const SizedBox(width: 16),
-                  Container(width: 150, height: 16, color: Colors.white),
-                ],
+        children: List.generate(
+          2,
+          (index) => Column(
+            children: [
+              const Divider(height: 1, color: Color(0xFFEEEEEE)),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Row(
+                  children: [
+                    Container(width: 22, height: 22, color: Colors.white),
+                    const SizedBox(width: 16),
+                    Container(width: 150, height: 16, color: Colors.white),
+                  ],
+                ),
               ),
-            ),
-          ],
-        )),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -588,14 +583,20 @@ class ProfilePage extends GetView<ProfileController> {
                 actions: [
                   TextButton(
                     onPressed: () => Get.back(),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
                       Get.back();
                       controller.logout();
                     },
-                    child: const Text('Logout', style: TextStyle(color: Color(0xFFFF5252))),
+                    child: const Text(
+                      'Logout',
+                      style: TextStyle(color: Color(0xFFFF5252)),
+                    ),
                   ),
                 ],
               ),

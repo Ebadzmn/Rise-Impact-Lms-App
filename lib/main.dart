@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'firebase_options.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/notification_service.dart';
+import 'features/notifications/notifications_controller.dart';
 import 'app.dart';
 
 void main() async {
@@ -17,6 +18,7 @@ void main() async {
   // Initialize Global Services
   await Get.putAsync(() => StorageService().init());
   await Get.putAsync(() => NotificationService().init());
+  Get.put(NotificationsController(), permanent: true);
 
   runApp(const App());
 }

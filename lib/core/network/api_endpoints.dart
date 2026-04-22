@@ -5,7 +5,6 @@ class ApiEndpoints {
   // static const String baseUrl = 'https://lmsapi.zeroproofdrive.org/api/v1';
   static const String baseUrl = 'http://10.10.7.47:5001/api/v1';
 
-
   // Auth
   static const String login = '/auth/login';
   static const String signup = '/users';
@@ -18,6 +17,10 @@ class ApiEndpoints {
   // User
   static const String profile = '/users/profile';
   static const String updateProfile = '/users/profile';
+  static const String completeOnboarding = '/users/onboarding/complete';
+  static const String notifications = '/notifications';
+  static String markNotificationRead(String id) => '/notifications/$id/read';
+  static const String markAllNotificationsRead = '/notifications/read-all';
   static const String changePassword = '/auth/change-password';
   static const String studentHome = '/student/home';
   static const String studentProgress = '/student/progress';
@@ -26,17 +29,19 @@ class ApiEndpoints {
   // Courses
   static const String getCourses = '/courses';
   static const String browseCourses = '/courses/browse';
-  static const String studentCourseDetail = '/courses/:identifier/student-detail';
+  static const String studentCourseDetail =
+      '/courses/:identifier/student-detail';
   static const String getLesson = '/courses/:courseId/lessons/:lessonId';
-  static const String markLessonComplete = '/enrollments/:courseId/lessons/:lessonId/complete';
+  static const String markLessonComplete =
+      '/enrollments/:courseId/lessons/:lessonId/complete';
   static const String enrollments = '/enrollments';
-  
+
   // Quizzes
   static const String startQuizAttempt = '/quizzes/:quizId/attempts';
   static const String getQuizQuestions = '/quizzes/:quizId/student-view';
   static const String submitQuizAttempt = '/quizzes/attempts/:attemptId/submit';
   static const String getQuizResult = '/quizzes/attempts/:attemptId';
-  
+
   static const String courseOptions = '/courses/options';
   static const String bulkEnrollment = '/enrollments/bulk';
 
