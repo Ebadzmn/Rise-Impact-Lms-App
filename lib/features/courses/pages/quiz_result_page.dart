@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 import '../../../data/models/quiz_model.dart';
 
@@ -27,6 +28,8 @@ class QuizResultPage extends StatelessWidget {
             const SizedBox(height: 32),
             _buildScoreCard(),
             const SizedBox(height: 32),
+            if (!result.showResults && result.answers.isEmpty) 
+              _buildSummaryMessage(),
             if (result.showResults) _buildAnswerReview(),
             const SizedBox(height: 40),
             _buildActionButtons(context),
@@ -36,9 +39,39 @@ class QuizResultPage extends StatelessWidget {
     );
   }
 
+  Widget _buildSummaryMessage() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.blue),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Detailed review is only available for the most recent attempt.',
+              style: TextStyle(color: Colors.blue, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildResultHeader() {
     return Column(
       children: [
+        if (result.quizTitle != null) ...[
+          Text(
+            result.quizTitle!,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF6A7554)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+        ],
         Icon(
           result.passed ? Icons.check_circle_rounded : Icons.error_outline_rounded,
           size: 100,
@@ -49,6 +82,13 @@ class QuizResultPage extends StatelessWidget {
           result.passed ? 'Pass ✅' : 'Fail ❌',
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
+        if (result.completedAt != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Completed: ${DateFormat('dd MMM yyyy').format(result.completedAt!)}',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           result.passed ? 'You passed the quiz successfully.' : 'You didn\'t reach the passing score.',

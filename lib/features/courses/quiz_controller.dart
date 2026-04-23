@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:collection/collection.dart';
 import '../../core/network/api_client.dart';
+import '../../core/network/api_interceptor.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../data/models/quiz_model.dart';
 import 'course_details_controller.dart';
@@ -48,46 +51,72 @@ class QuizController extends GetxController {
   Future<void> startQuizFlow() async {
     isLoading.value = true;
     try {
-      // 1. Start Attempt
+      // 1. Fetch History First
+      final historyRes = await _api.get(ApiEndpoints.quizAttempts);
+      final historyData = (historyRes.data['data'] ?? historyRes.data) as List?;
+      
+      // 2. Load Quiz Questions (to get the title for matching)
+      final questionsRes = await _api.get(
+        ApiEndpoints.getQuizQuestions.replaceFirst(':quizId', quizId),
+      );
+      final qData = questionsRes.data['data'] ?? questionsRes.data;
+      final currentQuizTitle = qData['quiz']?['title']?.toString() ?? qData['title']?.toString();
+      
+      // 3. Check for existing attempt in history
+      final existingAttempt = historyData?.firstWhereOrNull((a) {
+        final aQuizId = (a['quiz'] is Map) ? (a['quiz']['_id'] ?? a['quiz']['id']) : a['quizId'];
+        if (aQuizId != null && aQuizId == quizId) return true;
+        if (currentQuizTitle != null && a['quizTitle'] == currentQuizTitle) return true;
+        return false;
+      });
+
+      if (existingAttempt != null) {
+        // Show result summary from history data
+        final result = QuizResultModel.fromJson(existingAttempt);
+        Future.microtask(() {
+          AppRouter.router.pushReplacementNamed(AppRoutes.quizResult, extra: result);
+        });
+        return;
+      }
+
+      // 4. No previous attempt found, start new one
       final attemptRes = await _api.post(
         ApiEndpoints.startQuizAttempt.replaceFirst(':quizId', quizId),
         body: {'quizId': quizId},
       );
       
       final attemptData = attemptRes.data['data'] ?? attemptRes.data;
-      attemptId.value = attemptData['_id']?.toString() ?? attemptData['id']?.toString() ?? '';
+      attemptId.value = (attemptData['_id'] ?? attemptData['id'])?.toString() ?? '';
       
-      // 2. Load Questions
-      final questionsRes = await _api.get(
-        ApiEndpoints.getQuizQuestions.replaceFirst(':quizId', quizId),
-      );
-      
-      final data = questionsRes.data['data'] ?? questionsRes.data;
-      
-      // DEBUG LOGGING
-      if (data['questions'] != null && (data['questions'] as List).isNotEmpty) {
-        final firstQ = data['questions'][0];
-        print('QUIZ DEBUG: First Q: ${firstQ['title'] ?? firstQ['text'] ?? firstQ['question']}');
-        if (firstQ['options'] != null && (firstQ['options'] as List).isNotEmpty) {
-          print('QUIZ DEBUG: First Option keys: ${firstQ['options'][0].keys}');
-        }
-      }
-
-      final qList = (data['questions'] as List?)?.map((e) => QuizQuestionModel.fromJson(e)).toList() ?? [];
+      // Setup questions and timer
+      final qList = (qData['questions'] as List?)?.map((e) => QuizQuestionModel.fromJson(e)).toList() ?? [];
       questions.assignAll(qList);
 
-      // 3. Setup Timer if available
-      final timeLimitMinutes = data['settings']?['timeLimit'] as int?;
+      final timeLimitMinutes = qData['settings']?['timeLimit'] as int?;
       if (timeLimitMinutes != null && timeLimitMinutes > 0) {
         startTimer(timeLimitMinutes);
       }
 
     } catch (e) {
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
-      // Handle Already Attempted logic if needed
-      if (e.toString().contains('already attempted')) {
-        Get.back();
+      if (e is NetworkException && (e.statusCode == 400 || e.statusCode == 409)) {
+        // Fallback for already attempted error if history check missed it
+        try {
+          final historyRes = await _api.get(ApiEndpoints.quizAttempts);
+          final historyData = (historyRes.data['data'] ?? historyRes.data) as List?;
+          final lastAttempt = historyData?.firstWhereOrNull((a) => 
+              (a['quiz']?['_id'] ?? a['quiz']?['id'] ?? a['quizId']) == quizId);
+          
+          if (lastAttempt != null) {
+            final result = QuizResultModel.fromJson(lastAttempt);
+            Future.microtask(() {
+              AppRouter.router.pushReplacementNamed(AppRoutes.quizResult, extra: result);
+            });
+            return;
+          }
+        } catch (_) {}
       }
+      
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
@@ -152,7 +181,7 @@ class QuizController extends GetxController {
       }
       
       // Navigate to Result Page
-      AppRouter.router.pushNamed(AppRoutes.quizResult, extra: result);
+      AppRouter.router.pushReplacementNamed(AppRoutes.quizResult, extra: result);
 
     } catch (e) {
       final lower = e.toString().toLowerCase();

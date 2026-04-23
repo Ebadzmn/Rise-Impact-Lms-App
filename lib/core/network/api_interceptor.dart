@@ -112,10 +112,11 @@ class ApiInterceptor extends InterceptorsWrapper {
 
 /// Thin wrapper around [DioException] so callers get a strongly-typed error.
 class NetworkException implements Exception {
-  const NetworkException({required this.message, this.statusCode});
+  const NetworkException({required this.message, this.statusCode, this.data});
 
   final String message;
   final int? statusCode;
+  final dynamic data;
 
   // Convenience factory from a raw [DioException].
   factory NetworkException.fromDioError(DioException e) {
@@ -136,13 +137,14 @@ class NetworkException implements Exception {
               e.message ??
               'Something went wrong.',
           statusCode: e.response?.statusCode,
+          data: e.response?.data,
         );
     }
   }
 
   @override
   String toString() =>
-      'NetworkException(statusCode: $statusCode, message: $message)';
+      'NetworkException(statusCode: $statusCode, message: $message, data: $data)';
 }
 
 /// Builds and returns a fully configured [Dio] instance.

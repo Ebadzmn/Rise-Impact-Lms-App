@@ -23,40 +23,56 @@ class QuizPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<QuizController>(tag: quizId);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: CustomAppBar(
-          title: 'Quiz',
-          showBackButton: true,
-          onBackCallback: () => context.pop(),
-        ),
-      ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          Get.delete<QuizController>(tag: quizId, force: true);
         }
-
-        if (controller.questions.isEmpty) {
-          return _buildEmptyState();
-        }
-
-        return SafeArea(
-          child: Column(
-            children: [
-              _buildProgressHeader(controller),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: _buildQuestionContent(controller),
-                ),
-              ),
-              _buildNavigationFooter(context, controller),
-            ],
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFAFAFA),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: CustomAppBar(
+            title: 'Quiz',
+            showBackButton: true,
+            onBackCallback: () => context.pop(),
           ),
-        );
-      }),
+        ),
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Checking quiz status...', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            );
+          }
+
+          if (controller.questions.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return SafeArea(
+            child: Column(
+              children: [
+                _buildProgressHeader(controller),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: _buildQuestionContent(controller),
+                  ),
+                ),
+                _buildNavigationFooter(context, controller),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 

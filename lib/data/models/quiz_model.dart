@@ -59,20 +59,24 @@ class QuizAttemptModel {
 }
 
 class QuizResultModel {
+  final String? quizTitle;
   final int score;
   final int maxScore;
   final double percentage;
   final bool passed;
   final String? timeSpent;
+  final DateTime? completedAt;
   final bool showResults;
   final List<QuestionReviewModel> answers;
 
   QuizResultModel({
+    this.quizTitle,
     required this.score,
     required this.maxScore,
     required this.percentage,
     required this.passed,
     this.timeSpent,
+    this.completedAt,
     required this.showResults,
     required this.answers,
   });
@@ -82,18 +86,32 @@ class QuizResultModel {
     
     // Safely handle quiz settings
     bool showResults = false;
+    String? quizTitle = data['quizTitle']?.toString();
+    
     if (data['quiz'] is Map) {
       showResults = data['quiz']['settings']?['showResults'] == true;
+      quizTitle ??= data['quiz']['title']?.toString();
+    } else if (data['showResults'] != null) {
+      showResults = data['showResults'] == true;
+    }
+
+    final answers = (data['answers'] as List?)?.map((e) => QuestionReviewModel.fromJson(e)).toList() ?? [];
+    
+    // If no answers are present (summary mode), force showResults to false
+    if (answers.isEmpty) {
+      showResults = false;
     }
 
     return QuizResultModel(
+      quizTitle: quizTitle,
       score: data['score'] is int ? data['score'] : int.tryParse(data['score']?.toString() ?? '0') ?? 0,
       maxScore: data['maxScore'] is int ? data['maxScore'] : int.tryParse(data['maxScore']?.toString() ?? '0') ?? 0,
       percentage: (data['percentage'] is num) ? (data['percentage'] as num).toDouble() : 0.0,
       passed: data['passed'] == true,
       timeSpent: data['timeSpent']?.toString(),
+      completedAt: data['completedAt'] != null ? DateTime.tryParse(data['completedAt'].toString()) : null,
       showResults: showResults,
-      answers: (data['answers'] as List?)?.map((e) => QuestionReviewModel.fromJson(e)).toList() ?? [],
+      answers: answers,
     );
   }
 }

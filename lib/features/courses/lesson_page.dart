@@ -275,6 +275,11 @@ class LessonPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (lesson.quiz?.quizId != null) {
+                  // Ensure fresh controller state before entering
+                  try {
+                    Get.delete(tag: lesson.quiz!.quizId, force: true);
+                  } catch (_) {}
+
                   context.pushNamed(
                     AppRoutes.quiz,
                     pathParameters: {'id': lesson.quiz!.quizId},
