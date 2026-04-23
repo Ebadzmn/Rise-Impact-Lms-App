@@ -2,8 +2,8 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // Base URL – change this to your actual backend
-  // static const String baseUrl = 'https://lmsapi.zeroproofdrive.org/api/v1';
-  static const String baseUrl = 'http://10.10.7.47:5001/api/v1';
+  static const String baseUrl = 'https://lmsapi.zeroproofdrive.org/api/v1';
+  // static const String baseUrl = 'http://10.10.7.47:5001/api/v1';
 
   // Auth
   static const String login = '/auth/login';

@@ -23,9 +23,7 @@ class NotificationsPage extends StatelessWidget {
           actions: [
             Obx(
               () => TextButton(
-                onPressed:
-                    controller.isMarkAllLoading.value ||
-                        controller.unreadCount.value == 0
+                onPressed: controller.isMarkAllLoading.value || controller.unreadCount.value == 0
                     ? null
                     : controller.markAllAsRead,
                 child: controller.isMarkAllLoading.value
@@ -76,32 +74,25 @@ class NotificationsPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: Obx(() {
-          if (controller.isLoading.value &&
-              controller.notificationList.isEmpty) {
-            return const _LoadingState();
-          }
+          final Widget child;
 
-          if (controller.errorMessage.value.isNotEmpty &&
-              controller.notificationList.isEmpty) {
-            return _ErrorState(
-              message: controller.errorMessage.value,
-              onRetry: controller.refreshNotifications,
+          if (controller.isLoading.value && controller.notificationList.isEmpty) {
+            child = _buildScrollablePlaceholder(const _LoadingState());
+          } else if (controller.errorMessage.value.isNotEmpty && controller.notificationList.isEmpty) {
+            child = _buildScrollablePlaceholder(
+              _ErrorState(
+                message: controller.errorMessage.value,
+                onRetry: controller.refreshNotifications,
+              ),
             );
-          }
-
-          if (controller.notificationList.isEmpty) {
-            return const _EmptyState();
-          }
-
-          return RefreshIndicator(
-            color: const Color(0xFFD88B2F),
-            onRefresh: controller.refreshNotifications,
-            child: ListView.separated(
+          } else if (controller.notificationList.isEmpty) {
+            child = _buildScrollablePlaceholder(const _EmptyState());
+          } else {
+            child = ListView.separated(
               controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              itemCount:
-                  controller.notificationList.length +
-                  (controller.isLoadingMore.value ? 1 : 0),
+              itemCount: controller.notificationList.length + (controller.isLoadingMore.value ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 if (index >= controller.notificationList.length) {
@@ -116,123 +107,142 @@ class NotificationsPage extends StatelessWidget {
                 }
 
                 final item = controller.notificationList[index];
-                final isMarking = controller.markingIds.contains(item.id);
-
-                return InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: isMarking
-                      ? null
-                      : () => controller.openNotification(context, item),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: item.isRead
-                          ? Colors.white
-                          : const Color(0xFFF9F4E8),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: item.isRead
-                            ? const Color(0xFFE8E8E8)
-                            : const Color(0xFFD88B2F).withOpacity(0.35),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: item.isRead
-                                ? const Color(0xFFF0F0F0)
-                                : const Color(0xFFD88B2F).withOpacity(0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            _iconForNotification(item),
-                            color: item.isRead
-                                ? const Color(0xFF7A7A7A)
-                                : const Color(0xFFD88B2F),
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.title,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: item.isRead
-                                            ? FontWeight.w600
-                                            : FontWeight.bold,
-                                        color: const Color(0xFF1A1A1A),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  if (!item.isRead)
-                                    Container(
-                                      width: 10,
-                                      height: 10,
-                                      margin: const EdgeInsets.only(top: 5),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFD88B2F),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  if (isMarking)
-                                    const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                item.text,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  height: 1.45,
-                                  color: Color(0xFF5F5F5F),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                item.timeLabel,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF8A8A8A),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                return _buildNotificationTile(context, controller, item);
               },
-            ),
+            );
+          }
+
+          return RefreshIndicator(
+            color: const Color(0xFFD88B2F),
+            onRefresh: controller.refreshNotifications,
+            child: child,
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildScrollablePlaceholder(Widget child) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      children: [
+        const SizedBox(height: 120),
+        child,
+      ],
+    );
+  }
+
+  Widget _buildNotificationTile(
+    BuildContext context,
+    NotificationsController controller,
+    NotificationItemModel item,
+  ) {
+    final isMarking = controller.markingIds.contains(item.id);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: isMarking ? null : () => controller.openNotification(context, item),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: item.isRead ? Colors.white : const Color(0xFFF9F4E8),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: item.isRead
+                ? const Color(0xFFE8E8E8)
+                : const Color(0xFFD88B2F).withOpacity(0.35),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: item.isRead
+                    ? const Color(0xFFF0F0F0)
+                    : const Color(0xFFD88B2F).withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _iconForNotification(item),
+                color: item.isRead
+                    ? const Color(0xFF7A7A7A)
+                    : const Color(0xFFD88B2F),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
+                            color: const Color(0xFF1A1A1A),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (!item.isRead)
+                        Container(
+                          width: 10,
+                          height: 10,
+                          margin: const EdgeInsets.only(top: 5),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFD88B2F),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      if (isMarking)
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item.text,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.45,
+                      color: Color(0xFF5F5F5F),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    item.timeLabel,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF8A8A8A),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

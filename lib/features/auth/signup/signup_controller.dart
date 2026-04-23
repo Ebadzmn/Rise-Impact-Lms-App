@@ -108,15 +108,17 @@ class SignupController extends GetxController {
       try {
         isLoading.value = true;
 
+        final body = <String, dynamic>{
+          "name": nameController.text.trim(),
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+          "gender": gender.value,
+          "dateOfBirth": dobController.text,
+        };
+
         await ApiClient.instance.post(
           ApiEndpoints.signup,
-          body: {
-            "name": nameController.text.trim(),
-            "email": emailController.text.trim(),
-            "password": passwordController.text,
-            "gender": gender.value,
-            "dateOfBirth": dobController.text,
-          },
+          body: body,
         );
 
         Get.snackbar('Success', 'Registration successful');
