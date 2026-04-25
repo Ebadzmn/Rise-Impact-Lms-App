@@ -6,12 +6,14 @@ class QuizBinding extends Bindings {
   final String? courseId;
   final String? lessonId;
   final String? courseSlug;
+  final String? initialAttemptId;
 
   QuizBinding({
     required this.quizId,
     this.courseId,
     this.lessonId,
     this.courseSlug,
+    this.initialAttemptId,
   });
 
   @override
@@ -22,6 +24,7 @@ class QuizBinding extends Bindings {
         courseId: courseId,
         lessonId: lessonId,
         courseSlug: courseSlug,
+        initialAttemptId: initialAttemptId,
       ),
       tag: quizId,
     );

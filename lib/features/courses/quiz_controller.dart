@@ -16,12 +16,14 @@ class QuizController extends GetxController {
   final String? courseId;
   final String? lessonId;
   final String? courseSlug;
+  final String? initialAttemptId;
 
   QuizController({
     required this.quizId,
     this.courseId,
     this.lessonId,
     this.courseSlug,
+    this.initialAttemptId,
   });
 
   // State Variables
@@ -79,14 +81,22 @@ class QuizController extends GetxController {
         return;
       }
 
-      // 4. No previous attempt found, start new one
-      final attemptRes = await _api.post(
-        ApiEndpoints.startQuizAttempt.replaceFirst(':quizId', quizId),
-        body: {'quizId': quizId},
-      );
-      
-      final attemptData = attemptRes.data['data'] ?? attemptRes.data;
-      attemptId.value = (attemptData['_id'] ?? attemptData['id'])?.toString() ?? '';
+      if (initialAttemptId != null && initialAttemptId!.isNotEmpty) {
+        attemptId.value = initialAttemptId!;
+      } else {
+        // 4. No previous attempt found, start new one
+        final attemptRes = await _api.post(
+          ApiEndpoints.startQuizAttempt.replaceFirst(':quizId', quizId),
+          body: {'courseId': courseId},
+        );
+
+        final attemptData = attemptRes.data['data'] ?? attemptRes.data;
+        if (attemptData['status'] == 'IN_PROGRESS' || attemptRes.data['success'] == true) {
+          attemptId.value = (attemptData['_id'] ?? attemptData['id'])?.toString() ?? '';
+        } else {
+          throw Exception(attemptRes.data['message'] ?? 'Failed to start quiz attempt');
+        }
+      }
       
       // Setup questions and timer
       final qList = (qData['questions'] as List?)?.map((e) => QuizQuestionModel.fromJson(e)).toList() ?? [];

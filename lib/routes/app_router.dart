@@ -207,17 +207,20 @@ class AppRouter {
                       final courseId = state.uri.queryParameters['courseId'];
                       final lessonId = state.uri.queryParameters['lessonId'];
                       final courseSlug = state.uri.queryParameters['slug'];
+                      final attemptId = state.uri.queryParameters['attemptId'];
                       QuizBinding(
                         quizId: id,
                         courseId: courseId,
                         lessonId: lessonId,
                         courseSlug: courseSlug,
+                        initialAttemptId: attemptId,
                       ).dependencies();
                       return QuizPage(
                         quizId: id,
                         courseId: courseId,
                         lessonId: lessonId,
                         courseSlug: courseSlug,
+                        initialAttemptId: attemptId,
                       );
                     },
                   ),

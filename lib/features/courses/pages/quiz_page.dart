@@ -10,6 +10,7 @@ class QuizPage extends StatelessWidget {
   final String? courseId;
   final String? lessonId;
   final String? courseSlug;
+  final String? initialAttemptId;
 
   const QuizPage({
     super.key,
@@ -17,6 +18,7 @@ class QuizPage extends StatelessWidget {
     this.courseId,
     this.lessonId,
     this.courseSlug,
+    this.initialAttemptId,
   });
 
   @override

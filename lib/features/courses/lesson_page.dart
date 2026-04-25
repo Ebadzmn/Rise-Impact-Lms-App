@@ -111,7 +111,7 @@ class LessonPage extends StatelessWidget {
       case 'READING':
         return _buildReadingContent(lesson);
       case 'QUIZ':
-        return _buildQuizContent(context, lesson);
+        return _buildQuizContent(context, controller, lesson);
       default:
         return _buildReadingContent(lesson);
     }
@@ -243,7 +243,11 @@ class LessonPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuizContent(BuildContext context, LessonDetailModel lesson) {
+  Widget _buildQuizContent(
+    BuildContext context,
+    LessonController controller,
+    LessonDetailModel lesson,
+  ) {
     return Center(
       child: Container(
         margin: const EdgeInsets.all(20),
@@ -272,37 +276,41 @@ class LessonPage extends StatelessWidget {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                if (lesson.quiz?.quizId != null) {
-                  // Ensure fresh controller state before entering
-                  try {
-                    Get.delete(tag: lesson.quiz!.quizId, force: true);
-                  } catch (_) {}
-
-                  context.pushNamed(
-                    AppRoutes.quiz,
-                    pathParameters: {'id': lesson.quiz!.quizId},
-                    queryParameters: {
-                      'courseId': courseId,
-                      'lessonId': lessonId,
-                      if (courseSlug != null && courseSlug!.isNotEmpty) 'slug': courseSlug!,
-                    },
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD88B2F),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Obx(
+              () => ElevatedButton(
+                onPressed: controller.isStartingQuiz.value
+                    ? null
+                    : () {
+                        if (lesson.quiz?.quizId != null) {
+                          controller.startQuiz(
+                            lesson.quiz!.quizId,
+                            courseSlug: courseSlug,
+                          );
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD88B2F),
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade400,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
+                child: controller.isStartingQuiz.value
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('Start Quiz'),
               ),
-              child: const Text('Start Quiz'),
             ),
           ],
         ),

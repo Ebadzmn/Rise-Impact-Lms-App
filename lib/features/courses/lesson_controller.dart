@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../data/models/lesson_detail_model.dart';
+import '../../../routes/app_routes.dart';
+import '../../../routes/app_router.dart';
+import 'quiz_controller.dart';
 
 class LessonController extends GetxController {
   final ApiClient _api = ApiClient.instance;
@@ -16,6 +19,7 @@ class LessonController extends GetxController {
   final Rxn<LessonDetailModel> lessonData = Rxn<LessonDetailModel>();
   final RxBool isCompleting = false.obs;
   final RxInt completionPercentage = 0.obs;
+  final RxBool isStartingQuiz = false.obs;
 
   @override
   void onInit() {
@@ -90,5 +94,46 @@ class LessonController extends GetxController {
         ],
       ),
     );
+  }
+
+  Future<void> startQuiz(String quizId, {String? courseSlug}) async {
+    if (isStartingQuiz.value) return;
+
+    isStartingQuiz.value = true;
+    try {
+      final response = await _api.post(
+        ApiEndpoints.startQuizAttempt.replaceFirst(':quizId', quizId),
+        body: {'courseId': courseId},
+      );
+
+      final data = response.data['data'] ?? response.data;
+      if (data['status'] == 'IN_PROGRESS' || response.data['success'] == true) {
+        final attemptId = (data['_id'] ?? data['id'])?.toString() ?? '';
+        
+        // Ensure fresh controller state
+        try {
+          Get.delete<QuizController>(tag: quizId, force: true);
+        } catch (_) {}
+
+        AppRouter.router.pushNamed(
+          AppRoutes.quiz,
+          pathParameters: {'id': quizId},
+          queryParameters: {
+            'courseId': courseId,
+            'lessonId': lessonId,
+            'attemptId': attemptId,
+            if (courseSlug != null && courseSlug.isNotEmpty) 'slug': courseSlug,
+          },
+        );
+      } else {
+        Get.snackbar('Error', data['message'] ?? 'Failed to start quiz',
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to start quiz: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isStartingQuiz.value = false;
+    }
   }
 }
