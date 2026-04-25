@@ -6,6 +6,7 @@ import '../../data/models/lesson_detail_model.dart';
 import '../../../routes/app_routes.dart';
 import '../../../routes/app_router.dart';
 import 'quiz_controller.dart';
+import '../../data/models/quiz_model.dart';
 
 class LessonController extends GetxController {
   final ApiClient _api = ApiClient.instance;
@@ -107,14 +108,30 @@ class LessonController extends GetxController {
       );
 
       final data = response.data['data'] ?? response.data;
-      if (data['status'] == 'IN_PROGRESS' || response.data['success'] == true) {
+      if (data['status'] == 'IN_PROGRESS') {
         final attemptId = (data['_id'] ?? data['id'])?.toString() ?? '';
-        
+
         // Ensure fresh controller state
         try {
           Get.delete<QuizController>(tag: quizId, force: true);
         } catch (_) {}
 
+        AppRouter.router.pushNamed(
+          AppRoutes.quiz,
+          pathParameters: {'id': quizId},
+          queryParameters: {
+            'courseId': courseId,
+            'lessonId': lessonId,
+            'attemptId': attemptId,
+            if (courseSlug != null && courseSlug.isNotEmpty) 'slug': courseSlug,
+          },
+        );
+      } else if (data['status'] == 'COMPLETED') {
+        final result = QuizResultModel.fromJson(data);
+        AppRouter.router.pushNamed(AppRoutes.quizResult, extra: result);
+      } else if (response.data['success'] == true) {
+        // Fallback if status is missing but success is true
+        final attemptId = (data['_id'] ?? data['id'])?.toString() ?? '';
         AppRouter.router.pushNamed(
           AppRoutes.quiz,
           pathParameters: {'id': quizId},

@@ -130,10 +130,7 @@ class LoginController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
-  }
+  // TextEditingControllers are managed by the controller lifecycle. 
+  // Manual disposal here can cause 'used after being disposed' errors 
+  // during route transitions when using GoRouter.
 }

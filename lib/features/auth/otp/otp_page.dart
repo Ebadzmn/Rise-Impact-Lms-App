@@ -168,24 +168,43 @@ class OtpPage extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // Resend OTP
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Didn't receive the code? ",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    GestureDetector(
-                      onTap: controller.resendOtp,
-                      child: const Text(
-                        'Resend',
-                        style: TextStyle(
-                          color: Color(0xFF576045), // Sage Green
-                          fontWeight: FontWeight.bold,
-                        ),
+                Obx(
+                  () => Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        controller.resendTimer.value > 0
+                            ? "Resend code in ${controller.resendTimer.value}s"
+                            : "Didn't receive the code? ",
+                        style: const TextStyle(color: Colors.grey),
                       ),
-                    ),
-                  ],
+                      if (controller.resendTimer.value == 0)
+                        GestureDetector(
+                          onTap: controller.isResending.value
+                              ? null
+                              : () => controller.resendOtp(email),
+                          child: controller.isResending.value
+                              ? const Padding(
+                                  padding: EdgeInsets.only(left: 8),
+                                  child: SizedBox(
+                                    height: 12,
+                                    width: 12,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF576045),
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Resend',
+                                  style: TextStyle(
+                                    color: Color(0xFF576045),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),

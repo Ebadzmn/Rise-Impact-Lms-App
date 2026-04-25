@@ -18,14 +18,6 @@ class ForgotPasswordController extends GetxController {
 
   String? resetToken;
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    otpController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.onClose();
-  }
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;

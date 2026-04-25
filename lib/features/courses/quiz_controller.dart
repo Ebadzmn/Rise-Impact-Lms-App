@@ -73,12 +73,19 @@ class QuizController extends GetxController {
       });
 
       if (existingAttempt != null) {
-        // Show result summary from history data
-        final result = QuizResultModel.fromJson(existingAttempt);
-        Future.microtask(() {
-          AppRouter.router.pushReplacementNamed(AppRoutes.quizResult, extra: result);
-        });
-        return;
+        final status = (existingAttempt['status'] ?? '').toString().toUpperCase();
+        
+        if (status == 'COMPLETED') {
+          // Show result summary from history data
+          final result = QuizResultModel.fromJson(existingAttempt);
+          Future.microtask(() {
+            AppRouter.router.pushReplacementNamed(AppRoutes.quizResult, extra: result);
+          });
+          return;
+        } else if (status == 'IN_PROGRESS') {
+          // Resume this attempt
+          attemptId.value = (existingAttempt['_id'] ?? existingAttempt['id'] ?? existingAttempt['attemptId'])?.toString() ?? '';
+        }
       }
 
       if (initialAttemptId != null && initialAttemptId!.isNotEmpty) {

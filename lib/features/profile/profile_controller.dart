@@ -54,20 +54,6 @@ class ProfileController extends GetxController {
     fetchData();
   }
 
-  @override
-  void onClose() {
-    nameController.dispose();
-    emailController.dispose();
-    genderController.dispose();
-    dobController.dispose();
-    locationController.dispose();
-    phoneController.dispose();
-    oldPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.onClose();
-  }
-
   Future<void> pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
