@@ -87,16 +87,20 @@ class ForgotPasswordController extends GetxController {
           ApiEndpoints.verifyOtp,
           body: {
             "email": emailController.text.trim(),
-            "oneTimeCode": otpController.text.trim(),
+            "oneTimeCode": int.tryParse(otpController.text.trim()) ?? 0,
           },
         );
 
         // Save reset token
         final result = response.data;
-        if (result != null && result['data'] != null && result['data']['resetToken'] != null) {
-          resetToken = result['data']['resetToken'];
-        } else if (result != null && result['resetToken'] != null) {
-          resetToken = result['resetToken'];
+        if (result != null) {
+          if (result['data'] is String) {
+            resetToken = result['data'];
+          } else if (result['data'] is Map && result['data']['resetToken'] != null) {
+            resetToken = result['data']['resetToken'];
+          } else if (result['resetToken'] != null) {
+            resetToken = result['resetToken'];
+          }
         }
 
         if (resetToken == null) {
