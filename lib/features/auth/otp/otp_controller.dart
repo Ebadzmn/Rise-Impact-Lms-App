@@ -16,6 +16,16 @@ class OtpController extends GetxController {
   final RxInt resendTimer = 0.obs;
   Timer? _timer;
 
+  void resetSession() {
+    _timer?.cancel();
+    _timer = null;
+    otpController.clear();
+    isLoading.value = false;
+    isOtpComplete.value = false;
+    isResending.value = false;
+    resendTimer.value = 0;
+  }
+
   void onOtpComplete(String otp) {
     isOtpComplete.value = otp.length == 6;
   }

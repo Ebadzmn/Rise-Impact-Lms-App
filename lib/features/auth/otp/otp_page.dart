@@ -5,14 +5,34 @@ import 'otp_controller.dart';
 import '../../../core/widgets/custom_app_bar.dart';
 
 
-class OtpPage extends StatelessWidget {
+class OtpPage extends StatefulWidget {
   final String email;
-  const OtpPage({super.key, required this.email});
+  final bool autoResend;
+
+  const OtpPage({super.key, required this.email, this.autoResend = false});
+
+  @override
+  State<OtpPage> createState() => _OtpPageState();
+}
+
+class _OtpPageState extends State<OtpPage> {
+  late final OtpController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(OtpController());
+    controller.resetSession();
+
+    if (widget.autoResend) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.resendOtp(widget.email);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(OtpController());
-
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 56,
@@ -109,7 +129,7 @@ class OtpPage extends StatelessWidget {
 
                 // Subtitle
                 Text(
-                  'We have sent a 6-digit verification code to\n$email',
+                  'We have sent a 6-digit verification code to\n${widget.email}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
                 ),
@@ -124,7 +144,7 @@ class OtpPage extends StatelessWidget {
                   focusedPinTheme: focusedPinTheme,
                   submittedPinTheme: submittedPinTheme,
                   onChanged: controller.onOtpComplete,
-                  onCompleted: (pin) => controller.verifyOtp(email),
+                  onCompleted: (pin) => controller.verifyOtp(widget.email),
                 ),
                 const SizedBox(height: 32),
 
@@ -135,7 +155,7 @@ class OtpPage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: controller.isLoading.value || !controller.isOtpComplete.value
                           ? null
-                          : () => controller.verifyOtp(email),
+                          : () => controller.verifyOtp(widget.email),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD88B2F),
                         foregroundColor: Colors.white,
@@ -182,7 +202,7 @@ class OtpPage extends StatelessWidget {
                         GestureDetector(
                           onTap: controller.isResending.value
                               ? null
-                              : () => controller.resendOtp(email),
+                              : () => controller.resendOtp(widget.email),
                           child: controller.isResending.value
                               ? const Padding(
                                   padding: EdgeInsets.only(left: 8),

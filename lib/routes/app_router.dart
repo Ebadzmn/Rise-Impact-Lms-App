@@ -85,7 +85,10 @@ class AppRouter {
         path: AppRoutes.otp,
         builder: (context, state) {
           final email = state.uri.queryParameters['email'] ?? '';
-          return OtpPage(email: email);
+          final autoResend =
+              state.uri.queryParameters['autoResend'] == 'true' ||
+              state.uri.queryParameters['autoResend'] == '1';
+          return OtpPage(email: email, autoResend: autoResend);
         },
       ),
       GoRoute(

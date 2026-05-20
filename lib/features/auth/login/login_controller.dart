@@ -120,6 +120,17 @@ class LoginController extends GetxController {
         }
       } catch (e, stack) {
         debugPrint('Login Exception: $e\n$stack');
+
+        if (e is NetworkException &&
+            e.statusCode == 400 &&
+            e.message.toLowerCase().contains('verify your account')) {
+          final email = emailController.text.trim();
+          AppRouter.router.push(
+            '${AppRoutes.otp}?email=${Uri.encodeComponent(email)}&autoResend=true',
+          );
+          return;
+        }
+
         Get.snackbar(
           'Error',
           e is NetworkException ? e.message : 'Login failed. Please try again.',
